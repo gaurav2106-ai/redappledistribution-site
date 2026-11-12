@@ -182,3 +182,10 @@
 /* quote page line */
 .rq-info em.rq-flv{display:block;font-style:normal;font-weight:600;font-size:13px;line-height:1.3;margin-top:3px;color:#ff6a6a}
 @media (prefers-reduced-motion:reduce){.ra-dd-l,.ra-dd-btn,.ra-dd-chev,.ra-dd-l li,.ra-th{transition:none!important;animation:none!important}}
+
+/* ---- logo: one full wordmark logo everywhere (matches landing: header 52px, footer 72px). Links always go to "/" */
+.ra-lg{display:inline-flex;align-items:center;flex:0 0 auto;position:relative;text-decoration:none}
+.ra-lg img{display:block;height:100%;width:auto;max-width:none;position:static;pointer-events:none}
+.ra-lg--hd,.ra-lg--mh{height:52px}
+.ra-lg--ft{height:72px}
+.ra-lg--ag{height:84px;margin:0 auto}

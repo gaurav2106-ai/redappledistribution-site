@@ -120,3 +120,8 @@
 /* product / card price replacement */
 .rq-getq{font-size:18px;font-weight:700;color:#ff4a4a;letter-spacing:.3px;white-space:nowrap}
 #float-root{display:none!important}
+
+/* clean URLs: product and brand cards carry a real link (open in new tab works) */
+[data-f=link]{position:relative}
+.ra-cardlink{position:absolute;inset:0;z-index:1;display:block;border-radius:inherit}
+[data-f=link] [data-act]{position:relative;z-index:2}

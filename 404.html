@@ -1,5 +1,20 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"/><title>Red Apple Distribution</title>
-<meta name="robots" content="noindex"/><meta http-equiv="refresh" content="0;url=/"/>
-<script>location.replace('/');</script></head>
-<body><p>Redirecting to <a href="/">redappledistribution.com</a></p></body></html>
+<meta name="robots" content="noindex"/>
+<script>
+/* GitHub Pages SPA fallback. /shop/<anything> (product and brand pages) goes to /shop/?/<rest>,
+   where the shop runtime restores the clean path with history.replaceState before it renders.
+   Everything else goes to the landing page. /shop/ itself always exists, so this cannot loop. */
+(function () {
+  var l = location, p = l.pathname;
+  if (p.indexOf('/shop/') === 0 && p.length > 6) {
+    var rest = p.slice(6).replace(/&/g, '~and~');
+    var q = l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '';
+    l.replace('/shop/?/' + rest + q + l.hash);
+  } else {
+    l.replace('/');
+  }
+})();
+</script>
+<noscript><meta http-equiv="refresh" content="0;url=/"/></noscript></head>
+<body style="background:#0f0f10"><noscript><p>Redirecting to <a href="/">redappledistribution.com</a></p></noscript></body></html>

@@ -18,6 +18,30 @@
     });
   });
 
+  /* clean URLs: in-page anchors scroll smoothly and never write a hash (scroll-padding-top in CSS handles the fixed header) */
+  function cleanPath() { return location.pathname.replace(/index\.html$/, '') + location.search; }
+  function goTo(id) {
+    var t = id && document.getElementById(id);
+    if (!t) return false;
+    t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    return true;
+  }
+  $$('a[href]').forEach(function (a) {
+    var raw = a.getAttribute('href'), m = /^(?:\.\/|index\.html)?#([\w-]+)$/.exec(raw);
+    if (!m) return;
+    a.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      if (!document.getElementById(m[1])) return;
+      e.preventDefault();
+      if (typeof closeMenu === 'function') closeMenu();
+      goTo(m[1]);
+      history.replaceState(null, '', cleanPath());
+    });
+  });
+  window.addEventListener('load', function () {
+    if (window.__raHash) setTimeout(function () { goTo(window.__raHash); window.__raHash = ''; }, 300);
+  });
+
   var SALES_EMAIL = 'sales@redappledistro.com';
 
   /* ---------- age gate ---------- */

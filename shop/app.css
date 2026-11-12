@@ -125,3 +125,6 @@
 [data-f=link]{position:relative}
 .ra-cardlink{position:absolute;inset:0;z-index:1;display:block;border-radius:inherit}
 [data-f=link] [data-act]{position:relative;z-index:2}
+
+.rq-qty .rq-x{width:auto;height:auto;border:0;border-radius:0;background:none;padding:0 0 0 8px;font-size:13px;color:#a3a3a8;text-decoration:underline;white-space:nowrap}
+.rq-qty .rq-x:hover{color:#fff}

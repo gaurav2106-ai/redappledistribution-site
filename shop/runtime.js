@@ -38,11 +38,11 @@ function list(slug,q){let l;if(slug==='all')l=P;else if(slug==='new'||slug==='tr
 function scale(){const w=innerWidth;$$('.dsk').forEach(e=>{e.style.zoom=w<1440&&(w>=900||e.classList.contains('all'))?w/1440:1});$$('.mob').forEach(e=>{e.style.zoom=Math.min(w,520)/390});$$('.agegate-wrap').forEach((x,i)=>{x.dataset.mode=i?'m':'d'})}
 // ---- routes
 function route(){fixUrl();const pathq=curPath();const qs=new URLSearchParams(location.search);const seg=pathq.split('/');let page='home';
- if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
+ if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
  if(page==='cat'&&!TITLES[seg[1]])page='nf';if(page==='prod'&&!byId(seg[1]))page='nf';
  $$('#app>main').forEach(m=>m.hidden=m.dataset.page!==page);
  state={page,slug:seg[1],id:seg[1],brand:decodeURIComponent(seg[1]||''),q:qs.get('q')||''};vis=12;
- render();window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',contact:'Contact Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?byId(seg[1]).n:page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq)}
+ render();window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',policy:'Shipping and Delivery | Red Apple Distribution',terms:'Terms of Sale | Red Apple Distribution',privacy:'Privacy Policy | Red Apple Distribution',returns:'Returns and Credits | Red Apple Distribution',contact:'Contact Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?byId(seg[1]).n:page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq)}
 function render(){const pg=$('#app>main:not([hidden])');if(!pg)return;const s=state;
  if(s.page==='home'){$$('[data-grid=home-trending]',pg).forEach(c=>fillGrid(c,(PICKS.trending||[]).map(byId).filter(Boolean).slice(0,4),fillCard))}
  if(s.page==='cat'){const l=list(s.slug,s.q),title=s.q?'Search results':TITLES[s.slug];$$('[data-f=cat-title]',pg).forEach(e=>setText(e,title));$$('[data-f=cat-crumb]',pg).forEach(e=>setText(e,title));
@@ -126,12 +126,12 @@ document.addEventListener('click',e=>{const st=e.target.closest('[data-stars] i'
 $$('a[href="/shop/about"]').forEach(a=>{const p=a.parentElement,isP=p.tagName==='P';const t=isP?p:a;if(t.dataset.rv)return;const c=t.cloneNode(true);c.dataset.rv=1;const l=c.tagName==='A'?c:c.querySelector('a');l.setAttribute('href','/shop/reviews');l.textContent='Reviews';t.after(c)});
 
 // ---- clean-path router helpers
-const BASE='/shop/',SITE='https://redappledistribution.com',FIXED=['brands','about','contact','faq','policy','quote','review','reviews'];
+const BASE='/shop/',SITE='https://redappledistribution.com',FIXED=['brands','about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'];
 function curPath(){let p=location.pathname;if(p.indexOf(BASE)===0)p=p.slice(BASE.length);else p='';return p.replace(/index\.html$/,'').replace(/\/+$/,'')}
 // spa fallback (404.html -> /shop/?/rest), legacy #/ links and trailing slashes -> clean path, via replaceState
 function fixUrl(){const l=location;let path=l.pathname,search=l.search,hash=l.hash,ch=false;
  if(search.charAt(1)==='/'){const r=search.slice(1).split('&').map(x=>x.replace(/~and~/g,'&')).join('?');const i=r.indexOf('?');path=BASE.slice(0,-1)+(i<0?r:r.slice(0,i));search=i<0?'':r.slice(i);ch=true}
- if(hash){const m=/^#\/?([^]*)$/.exec(hash);if(m&&(m[1]===''||/^(c|p|brands?|about|contact|faq|policy|quote|review|reviews|order)([\/?]|$)/.test(m[1]))){const h=m[1],i=h.indexOf('?');path=BASE+(i<0?h:h.slice(0,i));search=i<0?'':h.slice(i);}ch=true;hash=''}
+ if(hash){const m=/^#\/?([^]*)$/.exec(hash);if(m&&(m[1]===''||/^(c|p|brands?|about|contact|faq|policy|terms|privacy|returns|quote|review|reviews|order)([\/?]|$)/.test(m[1]))){const h=m[1],i=h.indexOf('?');path=BASE+(i<0?h:h.slice(0,i));search=i<0?'':h.slice(i);}ch=true;hash=''}
  let q=path.replace(/index\.html$/,'');if(q==='/shop')q=BASE;else if(q!==BASE&&q.length>1)q=q.replace(/\/+$/,'');if(q!==path){path=q;ch=true}
  if(ch)history.replaceState(null,'',path+search+hash);
 }

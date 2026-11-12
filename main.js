@@ -130,6 +130,33 @@
   });
   $('#form-again').addEventListener('click', function () { done.hidden = true; });
 
+  /* ---------- reviews: real approved reviews from the shop (/shop/reviews.js), honest empty state when there are none ---------- */
+  (function () {
+    var box = $('#rev-list');
+    if (!box) return;
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    var list = (Array.isArray(window.REVIEWS) ? window.REVIEWS : []).filter(function (r) { return r && r.text; }).slice(0, 3);
+    if (!list.length) {
+      box.innerHTML = '<div class="rev__empty"><b>No reviews yet</b><p>Worked with us? We would love to hear how it went. Reviews are shown here once they are approved.</p></div>';
+      return;
+    }
+    box.innerHTML = list.map(function (r) {
+      var n = Math.max(1, Math.min(5, Math.round(+r.rating || 5))), stars = '';
+      for (var i = 1; i <= 5; i++) stars += '<i class="' + (i <= n ? 'on' : '') + '">&#9733;</i>';
+      return '<article class="rcard"><div class="rcard__stars" role="img" aria-label="' + n + ' out of 5 stars">' + stars + '</div><p>' + esc(r.text) + '</p><div><b>' + esc(r.name || 'Verified shop owner') + '</b>' + (r.shop ? '<small>' + esc(r.shop) + '</small>' : '') + '</div></article>';
+    }).join('');
+  })();
+
+  /* ---------- FAQ accordion (aria-expanded, keyboard accessible via native buttons) ---------- */
+  $$('[data-faq]').forEach(function (item) {
+    var btn = $('.faq__q', item);
+    btn.addEventListener('click', function () {
+      var open = !item.classList.contains('is-open');
+      item.classList.toggle('is-open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
   if (!motion) return;
 
   /* =====================================================================
@@ -296,6 +323,28 @@
     el.textContent = '0';
     gsap.to(o, { v: end, duration: 1.6, delay: .2, ease: 'power3.out', scrollTrigger: stTrig, onUpdate: function () { el.textContent = Math.round(o.v); } });
   });
+
+  /* ----- how it works: cards rise, red bars draw, outlined numbers slide in ----- */
+  var steps = hold($$('.step'));
+  var stepTrig = { trigger: '#steps', start: 'top 85%' };
+  gsap.from(steps, { y: 60, opacity: 0, duration: .9, stagger: .14, ease: 'power3.out', clearProps: 'transform', onComplete: release(steps), scrollTrigger: stepTrig });
+  gsap.from('.step__bar', { scaleX: 0, duration: 1.1, delay: .3, stagger: .14, ease: 'power3.inOut', scrollTrigger: stepTrig });
+  gsap.from('.step__n', { xPercent: -30, opacity: 0, duration: .9, delay: .25, stagger: .14, ease: 'power3.out', scrollTrigger: stepTrig });
+
+  /* ----- brands: tiles curtain in ----- */
+  var btiles = hold($$('.btile'));
+  gsap.set(btiles, { clipPath: 'inset(100% 0 0 0)', y: 40 });
+  ScrollTrigger.batch(btiles, {
+    start: 'top 92%', once: true,
+    onEnter: function (b) { gsap.to(b, { clipPath: 'inset(0% 0 0 0)', y: 0, duration: 1, stagger: .08, ease: 'power4.out', clearProps: 'clipPath,transform', onComplete: release(b) }); }
+  });
+
+  /* ----- reviews, about facts, faq rows ----- */
+  var rcards = $$('#rev-list > *');
+  gsap.from(rcards, { y: 50, opacity: 0, duration: .9, stagger: .12, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: '#rev-list', start: 'top 88%' } });
+  var facts = hold($$('.fact'));
+  gsap.from(facts, { y: 50, opacity: 0, duration: .9, stagger: .1, ease: 'power3.out', clearProps: 'transform', onComplete: release(facts), scrollTrigger: { trigger: '#facts', start: 'top 88%' } });
+  gsap.from($$('.faq__item'), { y: 36, opacity: 0, duration: .8, stagger: .09, ease: 'power3.out', clearProps: 'transform', scrollTrigger: { trigger: '#faq-list', start: 'top 88%' } });
 
   /* ----- stock up: frame wipes open, red line draws, outlined word slides ----- */
   gsap.from('.frame__pic', { clipPath: 'inset(0 0 100% 0)', duration: 1.3, ease: 'power4.inOut', scrollTrigger: { trigger: '#frame', start: 'top 80%' } });

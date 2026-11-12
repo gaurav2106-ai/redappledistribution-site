@@ -189,3 +189,7 @@
 .ra-lg--hd,.ra-lg--mh{height:52px}
 .ra-lg--ft{height:72px}
 .ra-lg--ag{height:84px;margin:0 auto}
+
+/* ---- grid frames grow with their content (Figma export fixed heights caused cards to spill over the footer) ---- */
+[data-grid]{height:auto!important;min-height:0!important;max-height:none!important}
+[data-grid=cat],[data-grid=brand-products],[data-grid=brands]{align-content:flex-start;padding-bottom:40px}

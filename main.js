@@ -8,6 +8,16 @@
   var motion = hasGsap && !reduce;
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
 
+  /* clean URLs: logo links go to "./"; when already on the landing, scroll to top and keep the URL hash-free */
+  $$('a.nav__logo').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      if (new URL(a.href, location.href).pathname !== location.pathname) return;
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+      if (location.hash || /index\.html$/.test(location.pathname)) history.replaceState(null, '', location.pathname.replace(/index\.html$/, ''));
+    });
+  });
+
   var SALES_EMAIL = 'sales@redappledistro.com';
 
   /* ---------- age gate ---------- */

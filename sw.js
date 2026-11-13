@@ -1,4 +1,6 @@
-/* Red Apple Distribution - service worker for web push only.
+/* LEGACY placeholder worker, used only while RA_PUSH.oneSignalAppId is empty (nothing is sent through it).
+   Once an App ID is set, consent.js unregisters this worker and OneSignalSDKWorker.js owns scope /.
+   Red Apple Distribution - service worker for web push only.
    No caching, no fetch handling: pages and assets always come from the network.
    Payload (JSON): { title, body, icon, badge, url, tag } */
 self.addEventListener('install', function () { self.skipWaiting(); });

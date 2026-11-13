@@ -7,13 +7,17 @@ window.RA_CONFIG = {
   showPrices: false
 };
 
-/* Web push (alerts for new drops, restocks, trending picks). Only used after a visitor allows notifications in Cookie settings
-   AND taps "Enable alerts". Nothing is sent until a provider or backend is connected (see README_PUSH.txt).
-   provider: 'none' | 'onesignal' | 'webpush' (label only)
-   vapidPublicKey: public VAPID key (base64url). Empty = visitors are only recorded as "consented" on their device.
-   subscribeEndpoint: URL that receives the push subscription JSON by POST. Empty = not sent anywhere. */
+/* Web push (alerts for new drops, restocks, trending picks) through OneSignal. Used only after a visitor allows notifications in
+   Cookie settings AND taps "Enable alerts". While oneSignalAppId is empty no OneSignal code is loaded and no request is made.
+   To go live: paste the OneSignal App ID below (see ONESIGNAL_SETUP.md), then rebuild and publish.
+   provider: 'onesignal' | 'none' | 'webpush'
+   oneSignalAppId: App ID from the OneSignal dashboard (a public identifier, safe to keep here). Empty = off.
+   safariWebId: optional, only for the Safari web ID of a OneSignal Safari setup. Empty is fine.
+   vapidPublicKey, subscribeEndpoint: legacy own-server option, unused with OneSignal. */
 window.RA_PUSH = {
-  provider: 'none',
+  provider: 'onesignal',
+  oneSignalAppId: '61ae92b7-e3c5-4419-bcef-ac2f67f2253a',
+  safariWebId: '',
   vapidPublicKey: '',
   subscribeEndpoint: ''
 };

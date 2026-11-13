@@ -1,9 +1,10 @@
 /* Red Apple Distribution - cookie and alerts consent (landing + shop). Exposes window.RAConsent { get, onChange, open }.
-   No third-party scripts. Nothing optional is stored or registered before the visitor chooses. */
+   No third-party script is loaded unless RA_PUSH.oneSignalAppId is set AND the visitor allowed notifications.
+   Nothing optional is stored or registered before the visitor chooses. */
 (function () {
   'use strict';
   var KEY = 'ra_consent', PUSHKEY = 'ra_push', VERSION = 1, DAYS = 180;
-  var CFG = window.RA_PUSH = Object.assign({ provider: 'none', vapidPublicKey: '', subscribeEndpoint: '' }, window.RA_PUSH || {});
+  var CFG = window.RA_PUSH = Object.assign({ provider: 'none', oneSignalAppId: '', safariWebId: '', vapidPublicKey: '', subscribeEndpoint: '' }, window.RA_PUSH || {});
   var listeners = [], state = null, barEl = null, panelEl = null, backEl = null, toastEl = null, toastTimer = 0, lastFocus = null;
 
   /* ---------- storage ---------- */
@@ -30,11 +31,27 @@
 
   /* ---------- push ---------- */
   var canSW = 'serviceWorker' in navigator;
+  var OS_SDK = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+  var OS_TAGS = ['site_section', 'last_category'];
+  var osP = null, osHooked = false, osTagTimer = 0;
+  /* OneSignal mode needs both an App ID and a configured provider; otherwise the site behaves as before (no SDK, no requests). */
+  function osMode() { return !!(CFG.oneSignalAppId && (CFG.provider === 'onesignal' || CFG.provider === 'none')); }
   function getPush() { try { return JSON.parse(localStorage.getItem(PUSHKEY)); } catch (e) { return null; } }
   function setPush(o) { try { localStorage.setItem(PUSHKEY, JSON.stringify(o)); } catch (e) {} }
   function registerSW() {
-    if (!canSW) return Promise.resolve(null);
+    if (!canSW || osMode()) return Promise.resolve(null);
     return navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () { return null; });
+  }
+  function regScript(r) { var w = r.active || r.waiting || r.installing; try { return w ? new URL(w.scriptURL).pathname : ''; } catch (e) { return ''; } }
+  /* Remove the previous version's custom worker so only one worker owns scope / (OneSignalSDKWorker.js). */
+  function dropLegacySW() {
+    if (!canSW) return Promise.resolve();
+    return navigator.serviceWorker.getRegistrations().then(function (regs) {
+      return Promise.all(regs.filter(function (r) { return regScript(r) === '/sw.js'; }).map(function (r) {
+        var p = r.pushManager ? r.pushManager.getSubscription().then(function (s) { return s ? s.unsubscribe() : null; }).catch(function () {}) : Promise.resolve();
+        return p.then(function () { return r.unregister(); });
+      }));
+    }).catch(function () {});
   }
   function unregisterAll() {
     try { localStorage.removeItem(PUSHKEY); } catch (e) {}
@@ -51,8 +68,95 @@
     for (var i = 0; i < r.length; i++) a[i] = r.charCodeAt(i);
     return a;
   }
-  /* Called only from a visitor click on "Enable alerts". Returns 'pending' | 'on' | 'denied' | 'unsupported'. */
+
+  /* ----- OneSignal (Web SDK v16). Loaded only with an App ID and the visitor's notifications consent. ----- */
+  function osInitOptions() {
+    var o = {
+      appId: CFG.oneSignalAppId,
+      serviceWorkerPath: 'OneSignalSDKWorker.js',
+      serviceWorkerParam: { scope: '/' },
+      autoResubscribe: true,
+      notifyButton: { enable: false },
+      promptOptions: { slidedown: { prompts: [] } }
+    };
+    if (CFG.safariWebId) o.safari_web_id = CFG.safariWebId;
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) o.allowLocalhostAsSecureOrigin = true;
+    return o;
+  }
+  function loadOS() {
+    if (osP) return osP;
+    osP = new Promise(function (resolve) {
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      window.OneSignalDeferred.push(function (OS) {
+        dropLegacySW().then(function () { return OS.init(osInitOptions()); }).then(function () {
+          resolve(OS); osHook(OS);
+        }, function () { osP = null; resolve(null); });
+      });
+      var s = document.createElement('script');
+      s.src = OS_SDK; s.defer = true;
+      s.onerror = function () { osP = null; resolve(null); };
+      document.head.appendChild(s);
+    });
+    return osP;
+  }
+  function osSubscribed(OS) {
+    try { return !!(OS.User && OS.User.PushSubscription && OS.User.PushSubscription.optedIn); } catch (e) { return false; }
+  }
+  function osCategory() {
+    var m = location.pathname.match(/^\/shop\/c\/([a-z0-9-]+)\/?$/);
+    return m && m[1] !== 'all' ? m[1] : '';
+  }
+  /* Tags carry only the section and the last viewed category. No personal data. */
+  function osTags(OS) {
+    if (!state || !state.notifications || !osSubscribed(OS) || !OS.User || !OS.User.addTag) return;
+    try {
+      OS.User.addTag('site_section', location.pathname.indexOf('/shop') === 0 ? 'shop' : 'landing');
+      var c = osCategory(); if (c) OS.User.addTag('last_category', c);
+    } catch (e) {}
+  }
+  function osHook(OS) {
+    if (osHooked) return; osHooked = true;
+    function later() { clearTimeout(osTagTimer); osTagTimer = setTimeout(function () { osTags(OS); }, 150); }
+    ['pushState', 'replaceState'].forEach(function (k) {
+      var orig = history[k];
+      history[k] = function () { var r = orig.apply(this, arguments); later(); return r; };
+    });
+    addEventListener('popstate', later);
+    try {
+      if (OS.User && OS.User.PushSubscription && OS.User.PushSubscription.addEventListener) OS.User.PushSubscription.addEventListener('change', later);
+    } catch (e) {}
+    later();
+  }
+  function osWithdraw() {
+    var done = function () { return unregisterAll(); };
+    if (!osP) return done();
+    var timeout = new Promise(function (r) { setTimeout(function () { r(null); }, 2500); });
+    return Promise.race([osP, timeout]).then(function (OS) {
+      if (OS) {
+        try { if (OS.User && OS.User.PushSubscription && OS.User.PushSubscription.optOut) OS.User.PushSubscription.optOut(); } catch (e) {}
+        try { if (OS.User && OS.User.removeTags) OS.User.removeTags(OS_TAGS); } catch (e) {}
+      }
+      return new Promise(function (r) { setTimeout(r, 400); });
+    }).then(done, done);
+  }
+  function osEnable() {
+    var rec = { consented: true, subscribed: false, ts: Date.now() };
+    return loadOS().then(function (OS) {
+      if (!OS) { setPush(rec); return 'unsupported'; }
+      return Promise.resolve(OS.Notifications && OS.Notifications.requestPermission && OS.Notifications.requestPermission()).then(function () {
+        var granted = false;
+        try { granted = OS.Notifications.permission === true || ('Notification' in window && Notification.permission === 'granted'); } catch (e) {}
+        if (!granted) { setPush(rec); return ('Notification' in window && Notification.permission === 'denied') ? 'denied' : 'dismissed'; }
+        try { if (!osSubscribed(OS) && OS.User.PushSubscription.optIn) OS.User.PushSubscription.optIn(); } catch (e) {}
+        rec.subscribed = true; setPush(rec);
+        setTimeout(function () { osTags(OS); }, 600);
+        return 'on';
+      });
+    }).catch(function () { setPush(rec); return 'unsupported'; });
+  }
+  /* Called only from a visitor click on "Enable alerts". Returns 'pending' | 'on' | 'denied' | 'dismissed' | 'unsupported'. */
   function enableAlerts() {
+    if (osMode()) return osEnable();
     var rec = { consented: true, subscribed: false, ts: Date.now() };
     if (!CFG.vapidPublicKey) { setPush(rec); return Promise.resolve('pending'); }
     if (!canSW || !('Notification' in window) || !('PushManager' in window)) { setPush(rec); return Promise.resolve('unsupported'); }
@@ -180,6 +284,7 @@
       enableAlerts().then(function (r) {
         if (r === 'on') showToast('Alerts are on', 'We will let you know about new drops and restocks on this device.', false);
         else if (r === 'denied') showToast('Alerts are blocked', 'Your browser has notifications blocked for this site. You can allow them in your browser settings.', false);
+        else if (r === 'dismissed') showToast('Alerts stay off', 'No problem. Switch notifications off and on again in Cookie settings if you want to be asked again.', false);
         else if (r === 'unsupported') showToast('Not available here', 'This browser cannot receive web alerts. Your choice is saved.', false);
         else showToast('You are on the list', 'Your choice is saved. Alerts start once we switch them on - nothing else to do.', false);
         toastTimer = setTimeout(hideToast, 7000);
@@ -199,10 +304,10 @@
     var was = !!(prev && prev.notifications);
     if (state.notifications && !was) {
       var rec = getPush(); if (!rec) setPush({ consented: true, subscribed: false, ts: Date.now() });
-      registerSW();
+      if (osMode()) loadOS(); else registerSW();
       showToast('Alerts, your call', 'Tap Enable alerts to get new-drop and restock notifications on this device. Your browser will ask once.', true);
     } else if (!state.notifications && was) {
-      unregisterAll();
+      osWithdraw();
       showToast('Alerts are off', 'We removed alerts from this device. You can turn them back on in Cookie settings.', false);
     } else if (!state.notifications) {
       unregisterAll();
@@ -236,7 +341,7 @@
   function hasGate() { return !!(document.getElementById('age') || document.getElementById('agegate') || document.querySelector('.agegate-wrap')); }
   function start() {
     state = load();
-    if (state) { if (state.notifications) registerSW(); return; }
+    if (state) { if (state.notifications) { if (osMode()) loadOS(); else registerSW(); } return; }
     var waited = false;
     function tick() {
       if (state || barEl) return;

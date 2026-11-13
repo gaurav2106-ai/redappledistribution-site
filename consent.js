@@ -233,7 +233,7 @@
       '<div class="rac-panel__bd">' +
       row('ess', 'Essential', 'Keeps the site working: your 21+ confirmation, your quote list and this choice. Cannot be turned off.', true, true) +
       row('ana', 'Analytics', 'Anonymous visit stats so we can improve the site. Off unless you allow it.', cur.analytics, false) +
-      row('not', 'Notifications and marketing', 'New drops, restocks and trending picks sent to this device. Your browser only asks after you tap Enable alerts.', cur.notifications, false) +
+      row('not', 'Notifications and marketing', 'New drops, restocks and trending picks sent to this device. Your browser will ask once to confirm.', cur.notifications, false) +
       '</div><div class="rac-panel__ft"><button type="button" class="rac-btn rac-btn--red" data-r="save">Save choices</button></div>';
     panelEl.addEventListener('click', function (e) {
       var t = e.target.closest('[data-r]'); if (!t) return;
@@ -305,8 +305,13 @@
     var was = !!(prev && prev.notifications);
     if (state.notifications && !was) {
       var rec = getPush(); if (!rec) setPush({ consented: true, subscribed: false, ts: Date.now() });
-      if (osMode()) loadOS(); else registerSW();
-      showToast('Alerts, your call', 'Tap Enable alerts to get new-drop and restock notifications on this device. Your browser will ask once.', true);
+      /* Accept all / Save choices is the visitor's click: ask the browser right away, no extra card. */
+      enableAlerts().then(function (r) {
+        if (r === 'on') showToast('Alerts are on', 'We will let you know about new drops and restocks on this device.', false);
+        else if (r === 'denied') showToast('Alerts are blocked', 'Your browser has notifications blocked for this site. You can allow them in your browser settings.', false);
+        else if (r === 'unsupported') showToast('Not available here', 'This browser cannot receive web alerts. Your choice is saved.', false);
+        else if (r === 'pending') showToast('You are on the list', 'Your choice is saved. Alerts start once we switch them on - nothing else to do.', false);
+      });
     } else if (!state.notifications && was) {
       osWithdraw();
       showToast('Alerts are off', 'We removed alerts from this device. You can turn them back on in Cookie settings.', false);

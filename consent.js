@@ -281,6 +281,7 @@
       var x = e.target.closest('[data-t]'); if (!x) return;
       if (x.getAttribute('data-t') === 'no') return hideToast();
       x.disabled = true;
+      hideToast(); /* get out of the way so only the browser's own prompt is on screen */
       enableAlerts().then(function (r) {
         if (r === 'on') showToast('Alerts are on', 'We will let you know about new drops and restocks on this device.', false);
         else if (r === 'denied') showToast('Alerts are blocked', 'Your browser has notifications blocked for this site. You can allow them in your browser settings.', false);

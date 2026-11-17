@@ -227,3 +227,31 @@ nav.ra-bc a:focus-visible{outline:2px solid #ff4a4a;outline-offset:3px;color:#ff
 .mob .lg-toc{padding:20px;border-radius:16px;gap:12px}
 .mob .lg-body p{font-size:15px}
 .mob .lg-body section{padding-bottom:22px}
+
+/* ---- order units (Piece / Box / Case) and the 10-box minimum */
+.ra-ob-hint{margin:-8px 0 0;width:100%;font:500 13px/1.45 'DM Sans',sans-serif;color:#a3a3a8}
+.ra-ob-min{margin:0;width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #3a3a3f;border-left:3px solid #ff2b2b;border-radius:12px;background:#141415;font:500 13px/1.5 'DM Sans',sans-serif;color:#d8d8dc}
+.ra-ob-min b{color:#fff;font-weight:700}
+.ra-ob-one{display:flex;align-items:center;width:100%;height:54px;padding:0 18px;box-sizing:border-box;background:#1a1a1c;color:#fff;border:1px solid #3a3a3f;border-radius:14px;font:600 16px 'DM Sans',sans-serif}
+.mob .ra-ob-one{height:50px;font-size:15px;padding:0 16px}
+.rq-info em.rq-un{display:block;font-style:normal;font-weight:600;font-size:13px;line-height:1.3;margin-top:3px;color:#d8d8dc}
+.rq-min{border-top:1px solid #2a2a2d;padding-top:16px;margin-top:6px}
+.rq-min-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-weight:700}
+.rq-min-n{font-size:15px;color:#fff}
+.rq-min-n b{font-size:20px}
+.rq-bar{height:8px;border-radius:4px;background:#2a2a2d;margin-top:10px;overflow:hidden}
+.rq-bar i{display:block;height:100%;width:0;background:#ff2b2b;border-radius:4px;transition:width .4s cubic-bezier(.22,1,.36,1)}
+.rq-min.is-ok .rq-bar i{background:#e6e6ea}
+.rq-min-msg{margin:10px 0 0;font-size:13px;line-height:1.5;color:#a3a3a8}
+.rq-min-msg.warn{color:#ff6a6a;font-weight:600}
+.rq-min-msg.ok{color:#d8d8dc}
+@media (prefers-reduced-motion:reduce){.rq-bar i{transition:none}}
+/* long display names: up to 2 lines on cards instead of one clipped line */
+[data-f=name].text-ellipsis{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.08!important;max-height:2.2em}
+/* quote lines on the 390 frame: name gets the full row, quantity controls sit under it */
+.mob .rq-item{flex-wrap:wrap}
+.mob .rq-info{flex:1 1 200px}
+.mob .rq-qty{flex:1 1 100%;justify-content:flex-end;padding-left:78px;box-sizing:border-box}
+.mob .rq-qty .rq-x{margin-left:auto}
+.ra-ob-item{margin:-6px 0 0;width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #ff2b2b;border-radius:12px;background:#2a1011;font:700 13px/1.45 'DM Sans',sans-serif;color:#fff}
+.ra-ob-item[hidden]{display:none}

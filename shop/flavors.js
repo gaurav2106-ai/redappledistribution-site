@@ -1,12 +1,4 @@
 window.FLAVOR_IMAGES={
- "156": {
-  "Angel Wings": "assets/p/flavors/156/angel-wings.webp",
-  "Blue Lily": "assets/p/flavors/156/blue-lily.webp",
-  "Nelumbo": "assets/p/flavors/156/nelumbo.webp",
-  "Nymph Lotus": "assets/p/flavors/156/nymph-lotus.webp",
-  "Water Lily": "assets/p/flavors/156/water-lily.webp",
-  "White Lotus": "assets/p/flavors/156/white-lotus.webp"
- },
  "49": {
   "Blackberry B Pop": "assets/p/flavors/49/blackberry-b-pop.webp",
   "Blackberry Blueberry Jam": "assets/p/flavors/49/blackberry-blueberry-jam.webp",

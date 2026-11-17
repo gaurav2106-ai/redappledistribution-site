@@ -21,3 +21,8 @@ window.RA_PUSH = {
   vapidPublicKey: '',
   subscribeEndpoint: ''
 };
+
+/* RA_AUTH:BEGIN - written by build_shop.sh from supabase_config.json. Public Project URL and anon key only (safe in the browser).
+   Empty values = accounts show "Accounts are opening soon". Never put a service role or secret key here. */
+window.RA_AUTH = {"url": "https://qdqioorsppkinjjyvata.supabase.co", "anonKey": "sb_publishable_svIENxJyhqBIK7BTUKHb7A_La3sxoAj"};
+/* RA_AUTH:END */

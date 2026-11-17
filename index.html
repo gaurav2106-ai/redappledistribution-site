@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="/consent.css?v=18d091d7"><script src="/shop/config.js"></script><script src="/consent.js?v=691d1fe1" defer></script>
-</head>
+<style id="ra-acct-css">.nav__acct-btn[hidden]{display:none!important}.nav__links a{white-space:nowrap}.nav__logo{flex:none}@media(max-width:1500px) and (min-width:1101px){.nav__links{gap:14px}.nav__links a:not(.btn){font-size:12px;letter-spacing:.02em}.nav__acct-btn,.nav__links .btn{padding-left:12px;padding-right:12px}}</style><script id="ra-acct-js">try{var s=JSON.parse(localStorage.getItem("ra_auth")||"null");if(s&&s.user){document.addEventListener("DOMContentLoaded",function(){var a=document.querySelector("a[data-ra-acct]"),c=document.querySelector("a[data-ra-acct-cta]"),n=localStorage.getItem("ra_auth_name")||"";if(a){a.textContent="My account"+(n?" - "+n:"");a.href="/shop/account"}if(c)c.hidden=true})}}catch(e){}</script></head>
 <body>
 
 <!-- Age gate -->
@@ -47,7 +47,7 @@
       <a href="#reviews">Reviews</a>
       <a href="#faq">FAQ</a>
       <a href="/shop/about">About</a>
-      <a href="#quote" class="btn btn--red btn--sm">Get a quote</a>
+      <a href="/shop/account/signin" class="nav__acct" data-ra-acct>Sign in</a><a href="/shop/account/signup" class="nav__acct-btn btn btn--red btn--sm" data-ra-acct-cta>Create account</a><a href="#quote" class="btn btn--red btn--sm">Get a quote</a>
     </nav>
     <button class="nav__burger" id="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
   </div>

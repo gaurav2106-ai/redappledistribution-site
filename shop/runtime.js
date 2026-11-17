@@ -3,14 +3,14 @@ const P=window.PRODUCTS,PICKS=window.PICKS||{},AL=window.ALIASES||{},byId=id=>P.
 const CATS={vapes:'Vapes',flower:'Flower',hydroxys:'Hydroxy','pre-rolls':'Pre-Rolls',edibles:'Edibles',kratom:'Kratom',shrooms:'Shrooms','smoke-accessories':'Smoke Accessories'};
 const TITLES={vapes:'Vapes',flower:'Flower',hydroxys:'Hydroxys','pre-rolls':'Pre-Rolls',edibles:'Edibles',kratom:'Kratom',shrooms:'Shrooms','smoke-accessories':'Smoke Accessories',all:'All products',new:'New arrivals',trending:'Trending'};
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
-const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}if(k==='ra_cart'){try{cartChanged()}catch(e){}}};
 const CFG=window.RA_CONFIG||{};const REVS=()=>(window.REVIEWS||[]).filter(r=>r&&r.text);
-let cart=ld('ra_cart',{}),vis=12,state={},qdone='';
+let cart=ld('ra_cart',{}),vis=12,state={},qdone='',lastSent=null;
 const priceTxt=p=>CFG.showPrices?m0(p.p):'Get a quote';
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const emailOK=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v),phoneOK=v=>v.replace(/\D/g,'').length>=10;
 async function send(type,data){const SUBJ={quote:'New QUOTE request',contact:'New contact message',subscribe:'New newsletter sign-up',review:'New customer REVIEW (to approve)'};
-const payload=Object.assign({_subject:(SUBJ[type]||'New website lead')+' - Red Apple Distribution',_template:'table',_captcha:'false',type,site:'redappledistribution.com',submitted_at:new Date().toISOString()},data);
+const payload=lastSent=Object.assign({_subject:(SUBJ[type]||'New website lead')+' - Red Apple Distribution',_template:'table',_captcha:'false',type,site:'redappledistribution.com',submitted_at:new Date().toISOString()},data,type==='quote'?acctInfo():{});
  if(CFG.endpoint){try{const r=await fetch(CFG.endpoint,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});return r.ok}catch(e){return false}}
  const q=ld('ra_outbox',[]);q.push(payload);sv('ra_outbox',q);return true}
 const boxes=()=>Object.keys(cart).reduce((a,k)=>{const q=ck(k),p=byId(q.id);return p?a+cart[k]*factor(p,q.un):a},0);
@@ -38,11 +38,11 @@ function list(slug,q){let l;if(slug==='all')l=P;else if(slug==='new'||slug==='tr
 function scale(){const w=innerWidth;$$('.dsk').forEach(e=>{e.style.zoom=w<1440&&(w>=900||e.classList.contains('all'))?w/1440:1});$$('.mob').forEach(e=>{e.style.zoom=Math.min(w,520)/390});$$('.agegate-wrap').forEach((x,i)=>{x.dataset.mode=i?'m':'d'})}
 // ---- routes
 function route(){fixUrl();let pathq=curPath();const qs=new URLSearchParams(location.search);let seg=pathq.split('/');if(seg[0]==='p'&&AL[seg[1]]){seg[1]=String(AL[seg[1]]);pathq=seg.join('/');history.replaceState(null,'',BASE+pathq+location.search)}let page='home';
- if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
+ if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='account')page=!seg[1]?'account':(seg[1]==='signup'||seg[1]==='signin')&&!seg[2]?seg[1]:'nf';else if(seg[0]==='admin')page='admin';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
  if(page==='cat'&&!TITLES[seg[1]])page='nf';if(page==='prod'&&!byId(seg[1]))page='nf';
  $$('#app>main').forEach(m=>m.hidden=m.dataset.page!==page);
  state={page,slug:seg[1],id:seg[1],brand:decodeURIComponent(seg[1]||''),q:qs.get('q')||''};vis=12;
- render();window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',policy:'Shipping and Delivery | Red Apple Distribution',terms:'Terms of Sale | Red Apple Distribution',privacy:'Privacy Policy | Red Apple Distribution',returns:'Returns and Credits | Red Apple Distribution',contact:'Contact Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?((bd(byId(seg[1]))?bd(byId(seg[1]))+' ':'')+strip(byId(seg[1]))):page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq);seoProd()}
+ render();if(authRoute())return;window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',policy:'Shipping and Delivery | Red Apple Distribution',terms:'Terms of Sale | Red Apple Distribution',privacy:'Privacy Policy | Red Apple Distribution',returns:'Returns and Credits | Red Apple Distribution',contact:'Contact Red Apple Distribution',signup:'Create a Retailer Account | Red Apple Distribution',signin:'Sign In | Red Apple Distribution',account:'Your Account | Red Apple Distribution',admin:'Admin | Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?((bd(byId(seg[1]))?bd(byId(seg[1]))+' ':'')+strip(byId(seg[1]))):page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq);seoProd()}
 function render(){const pg=$('#app>main:not([hidden])');if(!pg)return;const s=state;
  if(s.page==='home'){$$('[data-grid=home-trending]',pg).forEach(c=>fillGrid(c,(PICKS.trending||[]).map(byId).filter(Boolean).slice(0,4),fillCard))}
  if(s.page==='cat'){const l=list(s.slug,s.q),title=s.q?'Search results':TITLES[s.slug];$$('[data-f=cat-title]',pg).forEach(e=>setText(e,title));$$('[data-f=cat-crumb]',pg).forEach(e=>setText(e,title));
@@ -71,7 +71,7 @@ function render(){const pg=$('#app>main:not([hidden])');if(!pg)return;const s=st
  refresh(true)}
 function renderQuote(pg){const ids=Object.keys(cart).filter(i=>byId(ck(i).id));const n=boxes();
  $$('[data-qlist]',pg).forEach(c=>{c.innerHTML=ids.length?ids.map(i=>{const q=ck(i),p=byId(q.id),fl=q.fl,un=q.un;return '<div class="rq-item"><div class="rq-thumb">'+(p.i?'<img src="'+esc(p.i)+'" alt="'+esc(altOf(p))+'">':'<span>'+esc((bd(p)||p.n).slice(0,2).toUpperCase())+'</span>')+'</div><div class="rq-info">'+(bd(p)?'<b>'+esc(bd(p))+'</b>':'')+'<span>'+esc(strip(p))+'</span>'+(fl?'<em class="rq-flv">Flavor: '+esc(fl)+'</em>':'')+'<em class="rq-un">'+esc(unitLine(p,un,cart[i]))+'</em>'+(p.mq>0?'<em class="rq-un rq-min1">'+esc(minText(p,un))+'</em>':'')+'</div><div class="rq-qty"><button type="button" data-act="q-dec" data-id="'+esc(i)+'">-</button><em>'+cart[i]+'</em><button type="button" data-act="q-inc" data-id="'+esc(i)+'">+</button><button type="button" class="rq-x" data-act="q-rm" data-id="'+esc(i)+'">Remove</button></div></div>'}).join(''):'<p class="rq-empty">Your quote list is empty. Add products from the catalog, or just tell us what you need in the notes and we will take it from there.</p>'});
- $$('[data-f=q-count]',pg).forEach(e=>e.textContent=fb(n));qMin(pg,n);$$('[data-f=q-ref]',pg).forEach(e=>e.textContent=qdone)}
+ $$('[data-f=q-count]',pg).forEach(e=>e.textContent=fb(n));qMin(pg,n);prefillQuote(pg);quotePrompt(pg);paintPast(pg);$$('[data-f=q-ref]',pg).forEach(e=>e.textContent=qdone)}
 function stars(n){return '<span class="rv-stars">'+[1,2,3,4,5].map(i=>'<i class="'+(i<=n?'on':'')+'">&#9733;</i>').join('')+'</span>'}
 function fillReviews(c,list,home){if(!c)return;if(!list.length){c.innerHTML=home?'<div class="rv-empty"></div>':'<div class="rv-empty" style="grid-column:1/-1"><a class="rq-btn" href="/shop/review">Be the first to write a review</a></div>';return}
  c.innerHTML=list.map(r=>'<div class="rv-card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><b>'+esc(r.name||'Verified shop owner')+'</b><br><small>'+esc(r.shop||'')+'</small></div>'+stars(+r.rating||5)+'</div><p>'+esc(r.text)+'</p></div>').join('')}
@@ -108,7 +108,7 @@ async function submitForm(btn,kind){const f=btn.closest('[data-form]');if(!f)ret
   const items=Object.keys(cart).filter(i=>byId(ck(i).id)).map(i=>{const q=ck(i),p=byId(q.id);const fx=factor(p,q.un),bx=fx>0?Math.round(cart[i]*fx*100)/100:null;return {id:q.id,brand:p.b,product:p.n,original_name:p.n,display_name:strip(p),flavor:q.fl,unit:UN[q.un],quantity:cart[i],box_equivalent:bx,boxes:bx}});if(!items.length&&!v.notes)return bad(f,['notes'],'Add products to your list, or tell us what you need in the notes.');
   const ref='RA-'+String(Math.floor(Math.random()*9000)+1000);btn.textContent='Sending...';const ok=await send('quote',{ref,business:v.shop,name:v.contact,email:v.email,whatsapp:v.whatsapp,state:v.state,preferred_contact:v.best,notes:v.notes,items,items_summary:items.map((x,k)=>(k+1)+'. '+(x.brand&&x.brand!==HB?x.brand+' - ':'')+x.display_name+(x.flavor?' | Flavor: '+x.flavor:'')+' | '+x.quantity+' x '+x.unit+(x.box_equivalent==null?'':' = '+x.box_equivalent+' box')+' | SKU name: '+x.original_name).join('\n'),total_boxes:Math.round(boxes()*10)/10,minimum_boxes:MINB,meets_minimum:Math.round(boxes()*10)/10>=MINB?'yes':'no'});btn.textContent='Request my quote';
   if(!ok)return bad(f,[],'Sorry, we could not send your request. Please try again or email sales@redappledistro.com.');
-  qdone=ref;cart={};sv('ra_cart',cart);render();window.scrollTo(0,0);return}
+  saveQuoteAcct(lastSent);qdone=ref;cart={};sv('ra_cart',cart);render();window.scrollTo(0,0);return}
  if(kind==='contact'){['contact','email','whatsapp','message'].forEach(k=>need(k));if(miss.length)return bad(f,miss,'Please fill in the highlighted fields.');
   if(!emailOK(v.email))return bad(f,['email'],'Please enter a valid email address.');if(!phoneOK(v.whatsapp))return bad(f,['whatsapp'],'Please enter a valid WhatsApp or mobile number.');
   const ok=await send('contact',{name:v.contact,business:v.shop,email:v.email,whatsapp:v.whatsapp,message:v.message});if(!ok)return bad(f,[],'Sorry, we could not send your message. Please try again.');
@@ -137,10 +137,10 @@ function fixUrl(){const l=location;let path=l.pathname,search=l.search,hash=l.ha
 }
 function go(p,rep){const u=BASE.slice(0,-1)+(p.charAt(0)==='/'?p:'/'+p),f=u==='/shop'?BASE:u;if(f===location.pathname+location.search){window.scrollTo(0,0);return}history[rep?'replaceState':'pushState'](null,'',f);route()}
 function cardLink(e,path,label){e.style.cursor='pointer';$$('.ra-cardlink',e).forEach(x=>x.remove());const a=document.createElement('a');a.className='ra-cardlink';a.href=BASE.slice(0,-1)+path;a.setAttribute('aria-label',label||'Open');e.appendChild(a)}
-function seoTags(page,path){const fixed=page==='home'?BASE:(page==='cat'||page==='prod'||page==='brand')?BASE+path:FIXED.includes(page)?BASE+page+'/':BASE;
+function seoTags(page,path){const fixed=page==='home'?BASE:['signup','signin','account','admin'].includes(page)?BASE+path+'/':(page==='cat'||page==='prod'||page==='brand')?BASE+path:FIXED.includes(page)?BASE+page+'/':BASE;
  const cp=page==='cat'?BASE+'c/'+path.split('/')[1]+'/':fixed,u=SITE+(page==='prod'||page==='brand'?BASE+path:cp);
  let c=$('link[rel=canonical]');if(!c){c=document.createElement('link');c.rel='canonical';document.head.appendChild(c)}c.href=u;
- const og=$('meta[property="og:url"]');if(og)og.content=u;const rb=$('meta[name=robots]');if(rb)rb.content=page==='nf'?'noindex,follow':'index,follow'}
+ const og=$('meta[property="og:url"]');if(og)og.content=u;const rb=$('meta[name=robots]');if(rb)rb.content=page==='nf'?'noindex,follow':(page==='account'||page==='admin')?'noindex,nofollow':'index,follow'}
 document.addEventListener('click',e=>{if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const a=e.target.closest('a[href]');if(!a||a.target&&a.target!=='_self'||a.hasAttribute('download'))return;
  if(a.hasAttribute('data-noop')){e.preventDefault();return}
  const raw=a.getAttribute('href');let u;try{u=new URL(a.href,location.href)}catch(x){return}if(u.origin!==location.origin)return;
@@ -246,6 +246,387 @@ const SEO0={};
 function seoProd(){const set=(sel,val)=>{const el=$(sel);if(!el)return;if(!(sel in SEO0))SEO0[sel]=el.getAttribute('content');el.setAttribute('content',val===null?SEO0[sel]:val)};
  const p=state.page==='prod'?byId(state.id):null;set('meta[property="og:title"]',document.title);set('meta[name=description]',p?prodDesc2(p):null);set('meta[property="og:description"]',p?prodDesc2(p):null)}
 migrateCart();
+// ---- optional retailer accounts. Source: auth_runtime.js (spliced in by patch_runtime.py). No library: direct fetch to Supabase Auth (GoTrue) and PostgREST.
+// Guests are untouched: nothing here runs a network call unless a session exists or a visitor submits an account form.
+const AUTHC=window.RA_AUTH||{};
+let RECOV=/[#&](access_token|error_code|error|error_description|type)=/.test(location.hash)?location.hash:'';
+const LOCALH=/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+let MOCK=false;
+try{if(/[?&]authmock=1/.test(location.search))sessionStorage.setItem('ra_authmock','1');MOCK=sessionStorage.getItem('ra_authmock')==='1'&&(!AUTHC.url||LOCALH)}catch(e){}
+let MOCKC=false;try{if(MOCK){if(/[?&]confirm=1/.test(location.search))sessionStorage.setItem('ra_authmock_confirm','1');MOCKC=sessionStorage.getItem('ra_authmock_confirm')==='1'}}catch(e){}
+const AUTH_ON=MOCK||!!(AUTHC.url&&AUTHC.anonKey);
+const ADMINS=['gaurav@redappledistro.com','sales@redappledistro.com'];
+const STATES_US=["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+const PAYS=['Zelle','ACH/bank transfer','Wire','Check','Net terms request','Other'];
+const SK='ra_auth';
+let SESS=ld(SK,null),PROF=null,WELCOME=false,UIDN=0;
+if(SESS&&!(SESS.user&&SESS.user.id&&SESS.access_token))SESS=null;
+if(SESS&&(SESS.access_token==='mock')!==MOCK)SESS=null;
+if(!SESS){try{localStorage.removeItem('ra_auth_name')}catch(e){}}
+if(!AUTH_ON)SESS=null;
+const nowS=()=>Math.floor(Date.now()/1000);
+function saveSess(s){SESS=s;if(s)sv(SK,s);else{try{localStorage.removeItem(SK)}catch(e){}}}
+function setSession(j){saveSess({access_token:j.access_token,refresh_token:j.refresh_token||'',expires_at:j.expires_at||nowS()+(j.expires_in||3600),user:{id:j.user.id,email:String(j.user.email||'').toLowerCase()}})}
+class AErr extends Error{constructor(m,code,status){super(m);this.code=code||'';this.status=status||0}}
+
+// ---- remote backend (Supabase REST)
+async function raw(path,o){o=o||{};const h=Object.assign({apikey:AUTHC.anonKey,'Content-Type':'application/json'},o.headers||{});if(o.token)h.Authorization='Bearer '+o.token;else if(/^eyJ/.test(String(AUTHC.anonKey)))h.Authorization='Bearer '+AUTHC.anonKey; // publishable keys (sb_publishable_) go in apikey only
+ let r;try{r=await fetch(String(AUTHC.url).replace(/\/+$/,'')+path,{method:o.method||'GET',headers:h,body:o.body==null?undefined:JSON.stringify(o.body),keepalive:!!o.keepalive})}catch(e){throw new AErr('network','network',0)}
+ let j=null;const t=await r.text();try{j=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok){const m=(j&&(j.msg||j.message||j.error_description||j.error))||('HTTP '+r.status);throw new AErr(String(m),String((j&&(j.error_code||j.code))||''),r.status)}
+ return j}
+let refreshing=null;
+function refreshSess(){if(refreshing)return refreshing;const s=SESS;refreshing=(async()=>{try{const j=await raw('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});setSession(j);return true}catch(e){if(e.status>=400&&e.status<500){saveSess(null);PROF=null;acctNav()}return false}finally{refreshing=null}})();return refreshing}
+async function tok(){if(!SESS)throw new AErr('signed out','signed_out',401);if(SESS.expires_at-nowS()<60){const ok=await refreshSess();if(!SESS)throw new AErr('signed out','signed_out',401);if(!ok)throw new AErr('network','network',0)}return SESS.access_token}
+async function authed(path,o){o=o||{};const t=await tok();try{return await raw(path,Object.assign({},o,{token:t}))}catch(e){if(e.status===401&&SESS&&!o._r){if(await refreshSess()&&SESS)return raw(path,Object.assign({},o,{token:SESS.access_token}));}throw e}}
+const PF=['name','shop','phone','whatsapp','state','requirements','payment_pref'];
+const pick=(o,ks)=>{const r={};ks.forEach(k=>{r[k]=o[k]==null?'':o[k]});return r};
+const remoteB={
+ async signUp(email,password,data){const j=await raw('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{email,password,data}});if(j&&j.access_token&&j.user){setSession(j);return{ok:true}}return{ok:true,confirm:true}},
+ async signIn(email,password){const j=await raw('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});setSession(j)},
+ async signOut(){try{if(SESS)await raw('/auth/v1/logout',{method:'POST',token:SESS.access_token})}catch(e){}},
+ async recover(email){await raw('/auth/v1/recover?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{email}})},
+ async setPassword(password,token){return raw('/auth/v1/user',{method:'PUT',token,body:{password}})},
+ async resend(email){await raw('/auth/v1/resend?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{type:'signup',email}})},
+ async userFromToken(token){const u=await raw('/auth/v1/user',{token});return{id:u.id,email:String(u.email||'').toLowerCase()}},
+ async getProfile(){const r=await authed('/rest/v1/profiles?id=eq.'+encodeURIComponent(SESS.user.id)+'&select=*');return r&&r[0]||null},
+ async updateProfile(f){const r=await authed('/rest/v1/profiles?id=eq.'+encodeURIComponent(SESS.user.id),{method:'PATCH',headers:{Prefer:'return=representation'},body:pick(f,PF)});return r&&r[0]||null},
+ async getCart(){const r=await authed('/rest/v1/carts?user_id=eq.'+encodeURIComponent(SESS.user.id)+'&select=cart,updated_at');return r&&r[0]||null},
+ async saveCart(c,keep){const ts=new Date().toISOString();await authed('/rest/v1/carts?on_conflict=user_id',{method:'POST',keepalive:keep,headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{user_id:SESS.user.id,cart:c,updated_at:ts}});return ts},
+ async listQuotes(){return authed('/rest/v1/quotes?user_id=eq.'+encodeURIComponent(SESS.user.id)+'&select=id,payload,total_boxes,created_at&order=created_at.desc&limit=50')},
+ async saveQuote(payload,total){const r=await authed('/rest/v1/quotes',{method:'POST',headers:{Prefer:'return=representation'},body:{user_id:SESS.user.id,payload,total_boxes:total}});return r&&r[0]||null},
+ async listProfiles(){return authed('/rest/v1/profiles?select=*&order=created_at.desc&limit=1000')},
+ async setStatus(id,status){const r=await authed('/rest/v1/profiles?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=representation'},body:{status}});if(!r||!r.length)throw new AErr('not allowed','42501',403);return r[0]}
+};
+// ---- mock backend (?authmock=1, localhost or when no backend is configured): everything lives in localStorage key ra_mock_db
+const cLink=e=>location.origin+'/shop/account/signin?authmock=1&confirm=1#access_token=mockconfirm.'+encodeURIComponent(e)+'&refresh_token=mock&expires_in=3600&type=signup';
+const mockB=(()=>{const L=()=>ld('ra_mock_db',{users:{},carts:{},quotes:[],mail:[]}),S=d=>sv('ra_mock_db',d),W=()=>new Promise(r=>setTimeout(r,120));
+ const need=()=>{if(!SESS)throw new AErr('signed out','signed_out',401)},adm=()=>{need();if(!ADMINS.includes(SESS.user.email))throw new AErr('permission denied','42501',403)};
+ const mk_=u=>setSession({access_token:'mock',refresh_token:'mock',expires_at:nowS()+86400,user:{id:u.id,email:u.email}});
+ const byEmail=(d,e)=>d.users[String(e).toLowerCase()],byId_=(d,id)=>Object.values(d.users).find(u=>u.id===id);
+ return{
+ async signUp(email,pw,meta){await W();const d=L();email=email.toLowerCase();if(d.users[email])throw new AErr('User already registered','user_already_exists',422);if(pw.length<8)throw new AErr('Password should be at least 8 characters','weak_password',422);
+  const id='mock-'+Math.random().toString(36).slice(2,10);d.users[email]={id,email,pw,profile:Object.assign({id,email,status:'pending',created_at:new Date().toISOString()},pick(meta,PF))};if(MOCKC){d.users[email].confirmed=false;d.mail.push({to:email,kind:'confirm',link:cLink(email),at:new Date().toISOString()});S(d);return{ok:true,confirm:true}}S(d);mk_(d.users[email]);return{ok:true}},
+ async resend(email){await W();const d=L();if(byEmail(d,email)){d.mail.push({to:email.toLowerCase(),kind:'confirm',link:cLink(email),at:new Date().toISOString()});S(d)}},
+ async userFromToken(token){await W();const d=L(),m=/^mockconfirm\.(.+)$/.exec(token||''),u=m&&byEmail(d,decodeURIComponent(m[1]));if(!u)throw new AErr('Invalid or expired link','otp_expired',401);u.confirmed=true;S(d);return{id:u.id,email:u.email}},
+ async signIn(email,pw){await W();const u=byEmail(L(),email);if(!u||u.pw!==pw)throw new AErr('Invalid login credentials','invalid_credentials',400);if(u.confirmed===false)throw new AErr('Email not confirmed','email_not_confirmed',400);mk_(u)},
+ async signOut(){await W()},
+ async recover(email){await W();const d=L();if(byEmail(d,email)){d.mail.push({to:email.toLowerCase(),link:location.origin+'/shop/account/signin?authmock=1#access_token=mockrecovery.'+encodeURIComponent(email.toLowerCase())+'&refresh_token=mock&expires_in=3600&type=recovery',at:new Date().toISOString()});S(d)}},
+ async setPassword(pw,token){await W();const d=L(),m=/^mockrecovery\.(.+)$/.exec(token||''),u=m&&byEmail(d,decodeURIComponent(m[1]));if(!u)throw new AErr('Invalid or expired link','otp_expired',401);if(pw.length<8)throw new AErr('Password should be at least 8 characters','weak_password',422);u.pw=pw;S(d);return{id:u.id,email:u.email}},
+ async getProfile(){await W();need();const u=byId_(L(),SESS.user.id);return u?Object.assign({},u.profile):null},
+ async updateProfile(f){await W();need();const d=L(),u=byId_(d,SESS.user.id);Object.assign(u.profile,pick(f,PF));S(d);return Object.assign({},u.profile)},
+ async getCart(){await W();need();return L().carts[SESS.user.id]||null},
+ async saveCart(c,keep){need();const d=L(),ts=new Date().toISOString();d.carts[SESS.user.id]={cart:JSON.parse(JSON.stringify(c)),updated_at:ts};S(d);return ts},
+ async listQuotes(){await W();need();return L().quotes.filter(q=>q.user_id===SESS.user.id).sort((a,b)=>b.created_at<a.created_at?-1:1)},
+ async saveQuote(payload,total){await W();need();const d=L(),q={id:'q-'+Math.random().toString(36).slice(2,10),user_id:SESS.user.id,payload:JSON.parse(JSON.stringify(payload)),total_boxes:total,created_at:new Date().toISOString()};d.quotes.push(q);S(d);return q},
+ async listProfiles(){await W();adm();return Object.values(L().users).map(u=>Object.assign({},u.profile)).sort((a,b)=>b.created_at<a.created_at?-1:1)},
+ async setStatus(id,status){await W();adm();const d=L(),u=byId_(d,id);if(!u)throw new AErr('not found','404',404);u.profile.status=status;S(d);return Object.assign({},u.profile)}}})();
+const B=MOCK?mockB:remoteB;
+
+// ---- small helpers
+const digits=v=>String(v||'').replace(/\D/g,'');
+const us10=v=>{let d=digits(v);if(d.length===11&&d[0]==='1')d=d.slice(1);return d};
+const fmtUS=v=>{const d=us10(v);return d.length===10?'('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6):String(v||'').trim()};
+const waLink=v=>{let d=digits(v);if(d.length===10)d='1'+d;return d.length>=10?'https://wa.me/'+d:''};
+const isAdmin=()=>!!SESS&&ADMINS.includes(SESS.user.email);
+const nextPath=n=>({quote:'/quote',account:'/account'})[n]||'';
+const fdate=s=>{try{return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}catch(e){return ''}};
+const sfxOf=r=>r.closest('.dsk')?'d':'m';
+const roots=pg=>$$('[data-acct-root]',pg);
+const opt=(v,sel,lab)=>'<option value="'+esc(v)+'"'+(sel?' selected':'')+'>'+esc(lab||v)+'</option>';
+function emsg(e,ctx){e=e||{};const c=e.code||'',s=e.status||0,m=String(e.message||'').toLowerCase();
+ if(c==='network')return 'We could not reach the server. Check your connection and try again.';
+ if(c==='user_already_exists'||/already registered|already exists/.test(m))return 'An account with this email already exists. Try signing in instead.';
+ if(c==='invalid_credentials'||/invalid login/.test(m))return 'That email and password do not match. Please try again, or reset your password.';
+ if(c==='weak_password'||(s===422&&/password/.test(m)))return 'Please choose a stronger password (at least 8 characters).';
+ if(s===429||/rate limit/.test(m)||c==='over_request_rate_limit'||c==='over_email_send_rate_limit')return 'Too many attempts. Please wait a minute and try again.';
+ if(c==='email_not_confirmed'||/not confirmed/.test(m))return 'Please confirm your email first. Check your inbox for our message.';
+ if(c==='otp_expired'||c==='bad_jwt')return 'That link has expired. Please request a new one.';
+ if(ctx==='admin'&&(s===401||s===403))return 'You do not have access.';
+ if(s===401)return 'Your session has ended. Please sign in again.';
+ return 'Something went wrong. Please try again, or email sales@redappledistro.com.'}
+
+// ---- form builders (ids carry a per-frame suffix: the 1440 and 390 frames both live in the DOM)
+function fld(o){const id=o.id,e=id+'-e',h=o.hint?id+'-h':'',ar=' aria-describedby="'+(h?h+' ':'')+e+'"'+(o.req?' aria-required="true"':'');let c;
+ if(o.t==='select')c='<select class="rq-sel" id="'+id+'" name="'+o.n+'" autocomplete="'+(o.ac||'off')+'"'+ar+'>'+o.opts+'</select>';
+ else if(o.t==='textarea')c='<textarea class="rq-ta" id="'+id+'" name="'+o.n+'" rows="3" maxlength="1000" placeholder="'+esc(o.ph||'')+'"'+ar+'>'+esc(o.v||'')+'</textarea>';
+ else if(o.t==='password')c='<div class="aa-pw"><input class="rq-in" id="'+id+'" name="'+o.n+'" type="password" autocomplete="'+o.ac+'" autocapitalize="none" spellcheck="false"'+ar+'><button type="button" class="aa-eye" data-aa="pw" aria-controls="'+id+'" aria-pressed="false" aria-label="Show password">Show</button></div>';
+ else c='<input class="rq-in" id="'+id+'" name="'+o.n+'" type="'+(o.t||'text')+'" autocomplete="'+(o.ac||'off')+'"'+(o.inm?' inputmode="'+o.inm+'"':'')+(o.t==='email'?' autocapitalize="none" spellcheck="false"':'')+(o.ro?' readonly aria-disabled="true"':'')+' maxlength="'+(o.max||120)+'" placeholder="'+esc(o.ph||'')+'" value="'+esc(o.v||'')+'"'+ar+'>';
+ return '<div class="rq-f aa-f"><label for="'+id+'">'+esc(o.l)+(o.req?' <span class="aa-req" aria-hidden="true">*</span>':'')+(o.opt?' <small>optional</small>':'')+'</label>'+c+(o.hint?'<p class="aa-h" id="'+h+'">'+esc(o.hint)+'</p>':'')+'<p class="aa-fe" id="'+e+'" data-fe="'+o.n+'" role="alert"></p></div>'}
+const stateOpts=v=>'<option value="">Select your state</option>'+STATES_US.map(s=>opt(s,s===v)).join('');
+const payOpts=v=>'<option value="">No preference yet</option>'+PAYS.map(s=>opt(s,s===v)).join('');
+const HP='<input class="rq-hp" name="hp_check" tabindex="-1" autocomplete="off" aria-hidden="true">';
+function profFields(s,p,pre){p=p||{};const I=n=>pre+n+'-'+s;const same=p.whatsapp&&p.phone&&digits(p.whatsapp)===digits(p.phone);
+ return '<div class="rq-row2">'+fld({id:I('name'),n:'name',l:'Your name',ac:'name',req:1,ph:'Full name',v:p.name})+fld({id:I('shop'),n:'shop',l:'Shop name',ac:'organization',req:1,ph:'Your shop name',v:p.shop})+'</div>'
+ +'<div class="rq-row2">'+fld({id:I('phone'),n:'phone',t:'tel',l:'Phone (US)',ac:'tel',inm:'tel',req:1,ph:'(555) 123-4567',v:p.phone,max:20})+fld({id:I('wa'),n:'whatsapp',t:'tel',l:'WhatsApp number',opt:1,ac:'off',inm:'tel',ph:'(555) 123-4567',v:same?p.phone:p.whatsapp,ro:same,max:24})+'</div>'
+ +'<label class="rq-check aa-same"><input type="checkbox" name="wa_same"'+(same?' checked':'')+'> <span>My WhatsApp number is the same as my phone</span></label>'
+ +'<div class="rq-row2">'+fld({id:I('state'),n:'state',t:'select',l:'Your state',ac:'address-level1',req:1,opts:stateOpts(p.state)})+fld({id:I('pay'),n:'payment_pref',t:'select',l:'Preferred payment method',opt:1,opts:payOpts(p.payment_pref),hint:'Preference only. Never enter card or bank numbers.'})+'</div>'
+ +fld({id:I('req'),n:'requirements',t:'textarea',l:'What are you looking for?',opt:1,ph:'Brands, categories, flavors or target quantities',v:p.requirements})}
+function formSignup(s){const I=n=>'su-'+n+'-'+s;
+ return '<form class="rq-card aa-card" data-af="signup" novalidate onsubmit="return false"><h2 class="rq-h2">Your details</h2>'
+ +'<div class="rq-row2">'+fld({id:I('name'),n:'name',l:'Your name',ac:'name',req:1,ph:'Full name'})+fld({id:I('shop'),n:'shop',l:'Shop name',ac:'organization',req:1,ph:'Your shop name'})+'</div>'
+ +'<div class="rq-row2">'+fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})+fld({id:I('pw'),n:'password',t:'password',l:'Password',ac:'new-password',req:1,hint:'At least 8 characters.'})+'</div>'
+ +'<div class="rq-row2">'+fld({id:I('phone'),n:'phone',t:'tel',l:'Phone (US)',ac:'tel',inm:'tel',req:1,ph:'(555) 123-4567',max:20})+fld({id:I('wa'),n:'whatsapp',t:'tel',l:'WhatsApp number',opt:1,ac:'off',inm:'tel',ph:'(555) 123-4567',max:24})+'</div>'
+ +'<label class="rq-check aa-same"><input type="checkbox" name="wa_same"> <span>My WhatsApp number is the same as my phone</span></label>'
+ +'<div class="rq-row2">'+fld({id:I('state'),n:'state',t:'select',l:'Your state',ac:'address-level1',req:1,opts:stateOpts('')})+fld({id:I('pay'),n:'payment_pref',t:'select',l:'Preferred payment method',opt:1,opts:payOpts(''),hint:'Preference only. Never enter card or bank numbers.'})+'</div>'
+ +fld({id:I('req'),n:'requirements',t:'textarea',l:'What are you looking for?',opt:1,ph:'Brands, categories, flavors or target quantities'})
+ +HP+'<div class="aa-chk"><label class="rq-check"><input type="checkbox" name="age" id="'+I('age')+'" aria-describedby="'+I('age')+'-e" aria-required="true"> <span>I am 21 or older and I am signing up for a business that sells to adults 21 and older.</span></label><p class="aa-fe" id="'+I('age')+'-e" data-fe="age" role="alert"></p></div>'
+ +'<p class="rq-err aa-ferr" data-err role="alert"></p>'
+ +'<button type="submit" class="rq-btn full">Create account</button>'
+ +'<p class="rq-note aa-consent">By creating an account you agree to how we use your details as described on our <a href="/shop/privacy">Privacy page</a>. We never ask for card or bank numbers, and nothing is charged on this website.</p>'
+ +'<p class="rq-note aa-alt">Already have an account? <a href="/shop/account/signin">Sign in</a></p></form>'}
+function formSignin(s,next){const I=n=>'si-'+n+'-'+s;
+ return '<form class="rq-card aa-card aa-narrow" data-af="signin"'+(next?' data-next="'+esc(next)+'"':'')+' novalidate onsubmit="return false"><h2 class="rq-h2">Welcome back</h2>'
+ +fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})
+ +fld({id:I('pw'),n:'password',t:'password',l:'Password',ac:'current-password',req:1})
+ +HP+'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Sign in</button>'
+ +'<p class="rq-note aa-alt"><button type="button" class="aa-link" data-aa="view" data-v="forgot">Forgot password?</button></p>'
+ +'<p class="rq-note aa-alt">New here? <a href="/shop/account/signup'+(next&&nextPath(next)?'?next='+encodeURIComponent(next):'')+'">Create an account</a> or <a href="/shop/quote">request a quote as a guest</a>.</p></form>'}
+function formForgot(s){const I=n=>'fg-'+n+'-'+s;
+ return '<form class="rq-card aa-card aa-narrow" data-af="forgot" novalidate onsubmit="return false"><h2 class="rq-h2">Reset your password</h2><p class="rq-note" style="margin-bottom:16px">Enter the email you signed up with and we will send you a link to choose a new password.</p>'
+ +fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})
+ +HP+'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Send reset link</button>'
+ +'<p class="rq-note aa-alt"><button type="button" class="aa-link" data-aa="view" data-v="in">Back to sign in</button></p></form>'}
+function formReset(s){const I=n=>'rs-'+n+'-'+s;
+ return '<form class="rq-card aa-card aa-narrow" data-af="reset" novalidate onsubmit="return false"><h2 class="rq-h2">Choose a new password</h2>'
+ +fld({id:I('pw'),n:'password',t:'password',l:'New password',ac:'new-password',req:1,hint:'At least 8 characters.'})
+ +fld({id:I('pw2'),n:'password2',t:'password',l:'Repeat new password',ac:'new-password',req:1})
+ +'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Save new password</button></form>'}
+const msgCard=(pill,h,body,btns)=>'<div class="rq-card aa-card aa-narrow aa-msg"><p class="rq-pill">'+pill+'</p><h2 class="rq-h2">'+h+'</h2><p>'+body+'</p>'+(btns||'')+'</div>';
+const mockBar=()=>MOCK?'<p class="aa-mock" role="note">Test mode: accounts are simulated in this browser only.</p>':'';
+function paint(pg,fn){roots(pg).forEach(r=>{r.innerHTML=mockBar()+fn(sfxOf(r),r)})}
+function setH1(pg,t){$$('.rq-h1',pg).forEach(h=>{h.textContent=t})}
+
+// ---- validation
+const RULE={name:v=>v.length<2?'Please enter your name.':'',shop:v=>v.length<2?'Please enter your shop name.':'',
+ email:v=>!v?'Please enter your email.':!emailOK(v)?'Please enter a valid email address.':'',
+ password:(v,a)=>a&&a.__signin?(v?'':'Please enter your password.'):(v.length<8?'Use at least 8 characters.':''),
+ password2:(v,a)=>v!==a.password?'The two passwords do not match.':'',
+ phone:v=>us10(v).length!==10?'Please enter a valid US phone number (10 digits).':'',
+ whatsapp:(v,a)=>!a.wa_same&&v&&digits(v).length<10?'Please enter a valid WhatsApp number, or leave it empty.':'',
+ state:v=>!v?'Please choose your state.':'',age:v=>!v?'Please confirm to continue.':''};
+function rd(f){const o={};$$('input,select,textarea',f).forEach(i=>{if(!i.name)return;o[i.name]=i.type==='checkbox'?i.checked:(i.type==='password'?i.value:i.value.trim())});if(f.dataset.af==='signin')o.__signin=1;if(o.wa_same)o.whatsapp=o.phone;return o}
+function setFE(f,n,msg){const p=$('[data-fe="'+n+'"]',f),i=$('[name="'+n+'"]',f);if(p)p.textContent=msg||'';if(i){i.classList.toggle('rq-bad',!!msg);if(msg)i.setAttribute('aria-invalid','true');else i.removeAttribute('aria-invalid')}}
+function chk(f,names,v){const bad=[];names.forEach(n=>{const m=RULE[n]?RULE[n](v[n],v):'';setFE(f,n,m);if(m)bad.push(n)});return bad}
+function focusBad(f,n){const i=$('[name="'+n+'"]',f);if(i){try{i.scrollIntoView({block:'center'})}catch(e){}i.focus({preventScroll:true})}}
+function ferr(f,m){const e=$('[data-err]',f);if(e)e.textContent=m||''}
+function busy(f,on,txt){const b=$('button[type=submit]',f);f.dataset.busy=on?'1':'';if(!b)return;if(on){b.dataset.t=b.textContent;b.textContent=txt;b.disabled=true;f.setAttribute('aria-busy','true')}else{b.textContent=b.dataset.t||b.textContent;b.disabled=false;f.removeAttribute('aria-busy')}}
+document.addEventListener('focusout',e=>{const i=e.target,f=i&&i.closest&&i.closest('form[data-af]');if(!f||!i.name||!RULE[i.name])return;const v=rd(f),has=i.type==='checkbox'?i.checked:!!i.value;
+ if(!has&&!i.getAttribute('aria-invalid'))return;if(i.type==='tel'&&i.name==='phone'&&us10(i.value).length===10)i.value=fmtUS(i.value);setFE(f,i.name,RULE[i.name](v[i.name],v))});
+document.addEventListener('input',e=>{const i=e.target,f=i&&i.closest&&i.closest('form[data-af]');if(!f||!i.name)return;
+ if(i.name==='phone'){const cb=$('[name=wa_same]',f),w=$('[name=whatsapp]',f);if(cb&&cb.checked&&w)w.value=i.value}
+ if(i.getAttribute('aria-invalid')&&RULE[i.name]){const v=rd(f);setFE(f,i.name,RULE[i.name](v[i.name],v))}});
+document.addEventListener('change',e=>{const i=e.target,f=i&&i.closest&&i.closest('form[data-af]');if(!f)return;
+ if(i.name==='wa_same'){const w=$('[name=whatsapp]',f),p=$('[name=phone]',f);if(!w)return;w.readOnly=i.checked;w.setAttribute('aria-disabled',i.checked?'true':'false');if(i.checked){w.value=p?p.value:'';setFE(f,'whatsapp','')}else w.value=''}
+ else if(RULE[i.name]&&i.getAttribute('aria-invalid')){const v=rd(f);setFE(f,i.name,RULE[i.name](v[i.name],v))}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-aa=pw]');if(!b)return;const i=document.getElementById(b.getAttribute('aria-controls'));if(!i)return;const show=i.type==='password';i.type=show?'text':'password';b.textContent=show?'Hide':'Show';b.setAttribute('aria-pressed',show?'true':'false');b.setAttribute('aria-label',show?'Hide password':'Show password')});
+
+// ---- cart sync (guests are unchanged; this only runs with a session)
+function normCart(o){const n={};Object.keys(o||{}).forEach(k=>{const q=ck(k),p=byId(q.id),v=Math.floor(+o[k]);if(!p||!(v>=1))return;let un=q.un;if(!unitsOf(p).includes(un))un=defUnit(p);const nk=mk(p.id,q.fl,un);n[nk]=Math.min(9999,(n[nk]||0)+v)});return n}
+function mergeCarts(a,b){const A=normCart(a),Bc=normCart(b),o=Object.assign({},A);Object.keys(Bc).forEach(k=>{o[k]=Math.max(o[k]||0,Bc[k])});Object.keys(o).forEach(k=>{const q=ck(k),p=byId(q.id);o[k]=Math.min(9999,Math.max(o[k],minQty(p,q.un)))});return o}
+let cTimer=0,cDirty=false,cReady=false,cPend=false,qFlush=false;
+const tsGet=()=>(ld('ra_cart_ts',{})||{})[SESS&&SESS.user.id]||'';
+const tsSet=t=>{if(!SESS)return;const o=ld('ra_cart_ts',{})||{};o[SESS.user.id]=t;sv('ra_cart_ts',o)};
+function cartChanged(){if(!SESS||!AUTH_ON)return;if(!cReady){cPend=true;return}cDirty=true;clearTimeout(cTimer);cTimer=setTimeout(()=>pushCart(false),1200)}
+async function pushCart(keep){if(!SESS||!cDirty)return true;cDirty=false;clearTimeout(cTimer);try{const ts=await B.saveCart(cart,keep);tsSet(ts);return true}catch(e){cDirty=true;return false}}
+async function pullMerge(always){if(!SESS)return;let r;try{r=await B.getCart()}catch(e){cReady=true;return}
+ const remote=(r&&r.cart)||{},ts=(r&&r.updated_at)||'';
+ if(always||ts!==tsGet()){const m=mergeCarts(cart,remote),same=JSON.stringify(m)===JSON.stringify(normCart(remote));cart=m;sv('ra_cart',cart);cReady=true;if(!same||!r){cDirty=true;await pushCart(false)}else tsSet(ts)}
+ else cReady=true;
+ if(cPend){cPend=false;cDirty=true;pushCart(false)}
+ render();if(state.page==='account')paintDash($('#app>main:not([hidden])'))}
+addEventListener('pagehide',()=>{if(cDirty)pushCart(true)});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&cDirty)pushCart(true)});
+
+// ---- profile, header link, prompts, quote prefill and save
+async function loadProfile(){if(!SESS)return null;try{PROF=await B.getProfile()}catch(e){if(e.code==='signed_out')PROF=null}
+ if(PROF)rememberName();if(PROF&&state.page==='quote')prefillQuote($('#app>main:not([hidden])'));return PROF}
+function acctNav(){const on=!!SESS,n=on?String(localStorage.getItem('ra_auth_name')||''):'';$$('a[data-ra-acct]').forEach(a=>{a.textContent=on?'My account'+(n?' - '+n:''):'Sign in';a.setAttribute('href',on?'/shop/account':'/shop/account/signin')});$$('[data-ra-acct-cta]').forEach(e=>{e.hidden=on});$$('[data-acct-line]').forEach(e=>{e.hidden=!AUTH_ON||on})}
+function rememberName(){try{const p=PROF;if(!SESS||!p)return;const f=String(p.name||'').trim().split(/\s+/)[0]||String(p.shop||'').trim();localStorage.setItem('ra_auth_name',f.slice(0,14))}catch(e){}acctNav()}
+function acctInfo(){return SESS?{account:'signed in',account_email:SESS.user.email,account_status:(PROF&&PROF.status)||'pending'}:{}}
+function prefillQuote(pg){if(!SESS||!PROF||!pg)return;$$('form[data-form=quote]',pg).forEach(f=>{if(f.dataset.pf===PROF.id)return;f.dataset.pf=PROF.id;const set=(n,v)=>{const i=$('[name='+n+']',f);if(i&&v&&!i.value)i.value=v};set('shop',PROF.shop);set('contact',PROF.name);set('email',PROF.email||SESS.user.email);set('whatsapp',PROF.whatsapp||PROF.phone);set('state',PROF.state)})}
+function clearQuoteForms(){$$('form[data-form=quote]').forEach(f=>{if(!f.dataset.pf)return;delete f.dataset.pf;['shop','contact','email','whatsapp','state'].forEach(n=>{const i=$('[name='+n+']',f);if(i)i.value=''})})}
+function quotePrompt(pg){$$('[data-acct-prompt]',pg).forEach(e=>{if(!AUTH_ON){e.hidden=true;return}e.hidden=false;
+ e.innerHTML=SESS?'Signed in as <b>'+esc(SESS.user.email)+'</b>. Your details are filled in and this quote will be saved to your account.':'Have an account? <a href="/shop/account/signin?next=quote">Sign in</a> or <a href="/shop/account/signup?next=quote">create an account</a> to save your cart. Accounts are optional.'})}
+function saveQuoteAcct(payload){if(!SESS||!payload)return;const total=payload.total_boxes==null?0:payload.total_boxes;
+ const q=ld('ra_q_pending',[]);q.push({u:SESS.user.id,payload,total});sv('ra_q_pending',q);flushQuotes(true)}
+async function flushQuotes(loud){if(!SESS)return;if(qFlush)return;let q=ld('ra_q_pending',[]);if(!q.length)return;qFlush=true;const mine=q.filter(x=>x.u===SESS.user.id);let failed=false;
+ for(const x of mine){try{await B.saveQuote(x.payload,x.total);D.q=null;q=ld('ra_q_pending',[]).filter(y=>y!==x&&JSON.stringify(y)!==JSON.stringify(x))}catch(e){failed=true;break}sv('ra_q_pending',q)}
+ qFlush=false;if(failed&&loud)toast('Quote sent. We could not add it to your account history yet.')}
+
+// ---- sign-up notification to the owner (profile without password) through the existing form endpoint
+async function notifySignup(p){const body=Object.assign({_subject:'New retailer account: '+(p.shop||p.email)},p);sv('ra_acct_notify',body);const ok=await send('account',body);if(ok)try{localStorage.removeItem('ra_acct_notify')}catch(e){}return ok}
+async function retryNotify(){const b=ld('ra_acct_notify',null);if(b&&SESS&&b.email===SESS.user.email){const ok=await send('account',b);if(ok)try{localStorage.removeItem('ra_acct_notify')}catch(e){}}}
+
+// ---- email confirmation (works with confirmation off or on; the live project decides)
+const RS='ra_resend_ts';
+const coolLeft=e=>Math.max(0,60-Math.floor((Date.now()-((ld(RS,{})||{})[e]||0))/1000));
+function markResend(e){const o=ld(RS,{})||{};o[e]=Date.now();sv(RS,o)}
+function tickResend(){let any=false;$$('[data-aa=resend]').forEach(b=>{const l=coolLeft(b.dataset.email);b.disabled=l>0;b.textContent=l>0?'Resend email ('+l+'s)':'Resend email';if(l>0)any=true});if(any)setTimeout(tickResend,1000)}
+function paintConfirm(pg,email,first){setH1(pg,first?'Check your email':'Confirm your email');
+ paint(pg,()=>msgCard(first?'Almost there':'One more step','<span data-confirm-h>'+(first?'Check your email to confirm your account':'Please confirm your email first')+'</span>','We sent a confirmation link to <b>'+esc(email)+'</b>. Open it to finish setting up your account. If you do not see it, check your spam folder.','<p><button type="button" class="rq-btn" data-aa="resend" data-email="'+esc(email)+'">Resend email</button></p><p class="rq-note"><button type="button" class="aa-link" data-aa="restart">Wrong address? Start again</button> <span aria-hidden="true">|</span> <button type="button" class="aa-link" data-aa="view" data-v="in">Back to sign in</button></p>'));tickResend()}
+// first confirmed sign-in on this device after a sign-up that needed confirmation: tell the owner once (profile read from the server)
+async function confirmedNotify(){const pend=ld('ra_signup_pending',null);if(!pend||!SESS||pend.email!==SESS.user.email||!PROF)return;try{localStorage.removeItem('ra_signup_pending')}catch(e){}
+ await notifySignup(profileMail('yes'))}
+function profileMail(conf){const p=PROF||{};return Object.assign({id:SESS.user.id,email:p.email||SESS.user.email,status:p.status||'pending',email_confirmed:conf},pick(p,PF))}
+function recovKind(){const hp=new URLSearchParams(RECOV.replace(/^#/,''));if(hp.get('error')||hp.get('error_code'))return 'error';if(hp.get('type')==='signup')return hp.get('access_token')?'confirm':'confirmed';return hp.get('access_token')?'recovery':'error'}
+async function doConfirmReturn(){const pg=$('#app>main:not([hidden])'),hp=new URLSearchParams(RECOV.replace(/^#/,''));setH1(pg,'Confirming your email');paint(pg,()=>msgCard('One moment','Confirming your email','Signing you in...'));
+ try{const t=hp.get('access_token'),u=await B.userFromToken(t);setSession({access_token:t,refresh_token:hp.get('refresh_token')||'',expires_at:+hp.get('expires_at')||nowS()+(+hp.get('expires_in')||3600),user:u});RECOV='';
+  try{localStorage.removeItem('ra_signup_pending')}catch(e){}
+  PROF=null;await loadProfile();if(PROF)await notifySignup(profileMail('yes'));WELCOME='confirmed';await afterSignIn(null,false)}
+ catch(e){RECOV='';setH1(pg,'Email confirmed');paint(pg,()=>msgCard('Email confirmed','Email confirmed, please sign in','Thank you. Your email is confirmed. Sign in to open your account.','<p><button type="button" class="rq-btn" data-aa="view" data-v="in">Sign in</button></p>'))}}
+
+// ---- actions
+async function afterSignIn(f,fresh){PROF=null;cReady=false;await Promise.all([loadProfile(),pullMerge(true)]);flushQuotes(false);retryNotify();confirmedNotify();acctNav();clearQuoteForms();
+ const nx=f&&f.dataset.next;if(nx==='admin'){authRoute();return}go(nextPath(nx)||'/account')}
+async function doSignup(f){const v=rd(f);if(v.hp_check)return;const bad=chk(f,['name','shop','email','password','phone','whatsapp','state','age'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
+ ferr(f,'');busy(f,true,'Creating account...');
+ try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,requirements:v.requirements,payment_pref:v.payment_pref},email=v.email.toLowerCase();
+  const r=await B.signUp(email,v.password,meta);
+  if(r.confirm){sv('ra_signup_pending',{email});markResend(email);busy(f,false);paintConfirm($('#app>main:not([hidden])'),email,true);return}
+  WELCOME=true;PROF=null;notifySignup(Object.assign({id:SESS.user.id,email,status:'pending',email_confirmed:'no (confirmation is off)'},meta));
+  await afterSignIn(f,true)}
+ catch(e){busy(f,false);ferr(f,emsg(e,'signup'));if(e.code==='user_already_exists')focusBad(f,'email')}}
+async function doSignin(f){const v=rd(f);if(v.hp_check)return;const bad=chk(f,['email','password'],v);if(bad.length){ferr(f,'Please enter your email and password.');focusBad(f,bad[0]);return}
+ ferr(f,'');busy(f,true,'Signing in...');
+ try{await B.signIn(v.email.toLowerCase(),v.password);await afterSignIn(f,false)}catch(e){busy(f,false);if(e.code==='email_not_confirmed'||/not confirmed/i.test(e.message||'')){paintConfirm($('#app>main:not([hidden])'),v.email.toLowerCase(),false);return}ferr(f,emsg(e,'signin'));const p=$('[name=password]',f);if(p){p.value='';p.focus()}}}
+async function doForgot(f){const v=rd(f);if(v.hp_check)return;const bad=chk(f,['email'],v);if(bad.length){focusBad(f,bad[0]);return}
+ ferr(f,'');busy(f,true,'Sending...');
+ try{await B.recover(v.email.toLowerCase());const pg=$('#app>main:not([hidden])');setH1(pg,'Check your email');paint(pg,()=>msgCard('Reset link sent','Check your email','If an account exists for <b>'+esc(v.email)+'</b>, a link to choose a new password is on its way. It can take a minute to arrive. Check your spam folder too.','<p><button type="button" class="rq-btn ghost" data-aa="view" data-v="in">Back to sign in</button></p>'))}
+ catch(e){busy(f,false);ferr(f,emsg(e,'forgot'))}}
+async function doReset(f){const v=rd(f);const bad=chk(f,['password','password2'],v);if(bad.length){focusBad(f,bad[0]);return}
+ const hp=new URLSearchParams(RECOV.replace(/^#/,''));ferr(f,'');busy(f,true,'Saving...');
+ try{const u=await B.setPassword(v.password,hp.get('access_token')||'');
+  setSession({access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token')||'',expires_at:+hp.get('expires_at')||nowS()+(+hp.get('expires_in')||3600),user:u});RECOV='';
+  toast('Password updated');await afterSignIn(null,false)}
+ catch(e){busy(f,false);ferr(f,emsg(e,'reset'))}}
+async function doProfile(f){const v=rd(f);const bad=chk(f,['name','shop','phone','whatsapp','state'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
+ ferr(f,'');busy(f,true,'Saving...');
+ try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,requirements:v.requirements,payment_pref:v.payment_pref};
+  const p=await B.updateProfile(meta);PROF=Object.assign({},PROF||{},p||meta);D.edit=false;paintDash($('#app>main:not([hidden])'));toast('Profile saved')}
+ catch(e){busy(f,false);ferr(f,emsg(e,'profile'))}}
+const FORMS={signup:doSignup,signin:doSignin,forgot:doForgot,reset:doReset,profile:doProfile};
+document.addEventListener('submit',e=>{const f=e.target.closest&&e.target.closest('form[data-af]');if(!f)return;e.preventDefault();if(f.dataset.busy)return;const h=FORMS[f.dataset.af];if(h)h(f)});
+async function doSignOut(){await pushCart(false);const ok=!cDirty;await B.signOut();saveSess(null);PROF=null;try{localStorage.removeItem('ra_auth_name')}catch(e){}cReady=false;cDirty=false;D.q=null;D.err='';A.rows=null;A.q='';A.f='all';WELCOME=false;
+ if(ok){cart={};sv('ra_cart',cart)}clearQuoteForms();pastLoading=false;acctNav();render();toast('You are signed out');go('/')}
+function itemKey(it){const p=byId(it.id);if(!p)return null;const rev={Piece:'piece',Box:'box',Case:'case'};let un=rev[it.unit]||'box';if(!unitsOf(p).includes(un))un=defUnit(p);return{p,un,k:mk(p.id,it.flavor||'',un),q:Math.min(9999,Math.max(minQty(p,un),Math.floor(+it.quantity)||1))}}
+// adds only what is missing: the current cart is never replaced and existing lines keep their quantity
+function addItems(items){let add=0,have=0,skip=0;const n=Object.assign({},cart);items.forEach(it=>{const r=itemKey(it);if(!r){skip++;return}if(n[r.k]){have++;return}n[r.k]=r.q;add++});if(add){cart=n;sv('ra_cart',cart);render()}return{add,have,skip}}
+const addMsg=r=>!r.add?(r.have?'Already in your list':'Those products are no longer available'):'Added '+r.add+' item'+(r.add>1?'s':'')+' to your list'+(r.have?' ('+r.have+' already there)':'')+(r.skip?' ('+r.skip+' unavailable skipped)':'');
+function reorder(id){const q=(D.q||[]).find(x=>String(x.id)===String(id));if(!q)return;const r=addItems((q.payload&&q.payload.items)||[]);toast(addMsg(r));if(r.add||r.have)go('/quote')}
+// quote page: "From your past quotes" suggestions below the current list (signed-in only)
+let pastLoading=false;
+function paintPast(pg){if(!pg)return;const hosts=$$('[data-past]',pg);if(!hosts.length)return;
+ if(!SESS||!AUTH_ON){hosts.forEach(h=>{h.hidden=true;h.innerHTML=''});return}
+ if(D.q===null){if(!pastLoading){pastLoading=true;B.listQuotes().then(q=>{D.q=q||[]},()=>{D.q=[]}).then(()=>{pastLoading=false;if(state.page==='quote')paintPast($('#app>main:not([hidden])'))})}hosts.forEach(h=>{h.hidden=true});return}
+ const qs=D.q.filter(q=>q.payload&&(q.payload.items||[]).length).slice(0,3);
+ hosts.forEach(h=>{if(!qs.length){h.hidden=true;h.innerHTML='';return}h.hidden=false;
+  h.innerHTML='<div class="rq-past-h"><b>Don\'t leave your first choices</b><span>From your past quotes. Add items to your list above. Your current list is never replaced.</span></div>'+qs.map(q=>{const p=q.payload,its=p.items;return '<div class="rq-pq"><div class="rq-pq-h"><div><b>'+esc(p.ref||String(q.id).slice(0,8))+'</b><span>'+esc(fdate(q.created_at))+' - '+esc(fb(+q.total_boxes||0))+' boxes</span></div><button type="button" class="rq-btn ghost aa-sm" data-aa="pq-add" data-id="'+esc(q.id)+'">Add these to my cart</button></div><ul>'
+   +its.slice(0,6).map((it,i)=>'<li><span>'+esc(it.display_name||it.product||'Item')+(it.flavor?' - '+esc(it.flavor):'')+' <em>'+esc((it.quantity||it.boxes||'')+' '+(it.unit||'Box'))+'</em></span><button type="button" class="rq-pq-one" data-aa="pq-one" data-id="'+esc(q.id)+'" data-i="'+i+'" aria-label="Add '+esc(it.display_name||it.product||'item')+' to my cart">Add</button></li>').join('')+(its.length>6?'<li class="aa-more">and '+(its.length-6)+' more in this quote</li>':'')+'</ul></div>'}).join('')})}
+
+// ---- views: sign-up, sign-in (+ forgot / reset), soon
+function paintSignup(pg){paint(pg,s=>formSignup(s))}
+function paintSignin(pg,view,next){const t={in:'Sign in',forgot:'Reset your password',recovery:'Choose a new password'}[view]||'Sign in';setH1(pg,t);
+ if(view==='recovery'){const k=recovKind();
+  if(k==='confirm'){doConfirmReturn();return}
+  if(k==='confirmed'){RECOV='';setH1(pg,'Email confirmed');paint(pg,()=>msgCard('Email confirmed','Email confirmed, please sign in','Thank you. Your email is confirmed. Sign in to open your account.','<p><button type="button" class="rq-btn" data-aa="view" data-v="in">Sign in</button></p>'));return}
+  if(k==='error'){RECOV='';setH1(pg,'Link expired');paint(pg,()=>msgCard('Link expired','This link is no longer valid','Links work once and expire after a while. For a password reset, request a new link. For a new account, sign in and we will offer to resend the confirmation email.','<p><button type="button" class="rq-btn" data-aa="view" data-v="forgot">Send a new reset link</button> <button type="button" class="rq-btn ghost" data-aa="view" data-v="in">Sign in</button></p>'));return}
+  paint(pg,s=>formReset(s));return}
+ paint(pg,s=>view==='forgot'?formForgot(s):formSignin(s,next))}
+function soonState(pg){setH1(pg,state.page==='admin'?'Retailer accounts':state.page==='signup'?'Create your account':state.page==='account'?'Account':'Sign in');
+ paint(pg,()=>'<div class="rq-card aa-card aa-msg aa-soon"><p class="rq-pill">Coming soon</p><h2 class="rq-h2">Accounts are opening soon</h2><p>Retailer accounts with a saved quote list and quote history are on the way. Until then you can browse the catalog and request a quote as a guest. It takes about a minute.</p><p><a class="rq-btn" href="/shop/quote">Get a quote</a> <a class="rq-btn ghost" href="/shop/c/all">Browse products</a></p></div>')}
+
+// ---- dashboard
+const D={q:null,p:null,edit:false,err:''};
+function statusBadge(st){const ok=st==='approved';return '<span class="aa-badge '+(ok?'is-ok':'is-wait')+'"><i aria-hidden="true"></i>Account status: '+(ok?'Approved':'Pending review')+'</span>'}
+function dashCart(){const ids=Object.keys(cart).filter(k=>byId(ck(k).id));if(!ids.length)return '<p class="rq-empty">Your saved cart is empty. Add products from the catalog and they will be saved here.</p><p><a class="rq-btn" href="/shop/c/all">Browse products</a></p>';
+ return '<div class="aa-lines">'+ids.slice(0,12).map(k=>{const q=ck(k),p=byId(q.id);return '<div class="aa-line"><b>'+esc(strip(p))+'</b>'+(q.fl?'<span>Flavor: '+esc(q.fl)+'</span>':'')+'<em>'+esc(unitLine(p,q.un,cart[k]))+'</em></div>'}).join('')+(ids.length>12?'<p class="rq-note">and '+(ids.length-12)+' more</p>':'')+'</div>'
+ +'<p class="rq-note" style="margin:10px 0 16px"><b>'+fb(boxes())+'</b> boxes in total</p><p><a class="rq-btn" href="/shop/quote">Review and request a quote</a></p>'}
+function dashQuotes(){if(D.err==='q')return '<p class="rq-empty">We could not load your quote history right now. Please refresh in a moment.</p>';if(D.q===null)return '<p class="rq-empty">Loading your quotes...</p>';
+ if(!D.q.length)return '<p class="rq-empty">No quote requests yet. When you send a quote while signed in, it is saved here so you can re-order in one tap.</p><p><a class="rq-btn ghost" href="/shop/c/all">Browse products</a></p>';
+ return D.q.map(q=>{const p=q.payload||{},its=p.items||[],ref=p.ref||String(q.id).slice(0,8);return '<div class="aa-q"><div class="aa-q-h"><div><b>'+esc(ref)+'</b><span>'+esc(fdate(q.created_at))+' - '+esc(fb(+q.total_boxes||0))+' boxes</span></div><button type="button" class="rq-btn ghost aa-sm" data-aa="reorder" data-id="'+esc(q.id)+'">Re-order</button></div>'
+  +'<ul class="aa-q-l">'+its.slice(0,5).map(it=>'<li>'+esc(it.display_name||it.product||'Item')+(it.flavor?' - '+esc(it.flavor):'')+' <em>'+esc((it.quantity||it.boxes||'')+' '+(it.unit||'Box'))+'</em></li>').join('')+(its.length>5?'<li class="aa-more">and '+(its.length-5)+' more</li>':'')+(its.length?'':'<li class="aa-more">Notes only</li>')+'</ul></div>'}).join('')}
+function dashHTML(s){const p=PROF;if(!p)return '<p class="rq-empty">Loading your account...</p>';
+ const row=(k,v)=>'<div><dt>'+k+'</dt><dd>'+(v||'<span class="aa-none">Not provided</span>')+'</dd></div>';
+ const prof=D.edit?'<form class="aa-edit" data-af="profile" novalidate onsubmit="return false">'+profFields(s,p,'pr-')+'<p class="rq-note" style="margin:-4px 0 14px">Email: '+esc(p.email||SESS.user.email)+' (contact us to change it)</p><p class="rq-err aa-ferr" data-err role="alert"></p><div class="aa-btns"><button type="submit" class="rq-btn">Save changes</button><button type="button" class="rq-btn ghost" data-aa="edit-off">Cancel</button></div></form>'
+  :'<dl class="aa-dl">'+row('Name',esc(p.name))+row('Shop',esc(p.shop))+row('Email',esc(p.email||SESS.user.email))+row('Phone',p.phone?'<a href="tel:+1'+us10(p.phone)+'">'+esc(p.phone)+'</a>':'')+row('WhatsApp',p.whatsapp?'<a href="'+esc(waLink(p.whatsapp))+'" target="_blank" rel="noopener">'+esc(p.whatsapp)+'</a>':'')+row('State',esc(p.state))+row('Payment preference',esc(p.payment_pref))+row('Looking for',esc(p.requirements))+'</dl><p style="margin-top:6px"><button type="button" class="rq-btn ghost aa-sm" data-aa="edit-on">Edit profile</button></p>';
+ const note=p.status==='approved'?'Your account is approved. Request a quote any time and our team will connect with you.':'Our team is reviewing your account. You can browse and request quotes in the meantime, nothing is on hold.';
+ return (WELCOME?'<div class="aa-welcome" role="status"><b>'+(WELCOME==='confirmed'?'Email confirmed. ':'')+'Welcome to Red Apple Distribution.</b> Your account is ready and we have your details.</div>':'')
+ +'<div class="aa-top">'+statusBadge(p.status)+'<p class="aa-note">'+note+'</p></div>'
+ +'<div class="rq-grid aa-dgrid"><div class="rq-card"><h2 class="rq-h2">Your profile</h2>'+prof+'</div><div class="rq-card"><h2 class="rq-h2">Saved cart</h2>'+dashCart()+'</div></div>'
+ +'<div class="rq-card aa-hist"><h2 class="rq-h2">Quote history</h2>'+dashQuotes()+'</div>'
+ +'<p class="aa-out"><button type="button" class="rq-btn ghost" data-aa="signout">Sign out</button></p>'}
+function paintDash(pg){if(!pg||state.page!=='account')return;paint(pg,s=>dashHTML(s))}
+async function loadDash(){const pg=$('#app>main:not([hidden])');paintDash(pg);
+ const [,q]=await Promise.all([loadProfile(),B.listQuotes().catch(e=>{D.err='q';return null})]);
+ if(!SESS)return;D.q=q||[];if(q)D.err='';paintDash($('#app>main:not([hidden])'));
+ if(!PROF)paint($('#app>main:not([hidden])'),()=>'<div class="rq-card aa-card aa-msg"><h2 class="rq-h2">We are setting up your profile</h2><p>This can take a moment. Please refresh the page, or contact us if it keeps happening.</p><p><button type="button" class="rq-btn" data-aa="signout">Sign out</button></p></div>')}
+
+// ---- admin approvals (UI check is cosmetic; the database policies decide)
+const A={rows:null,q:'',f:'all',err:'',loading:false};
+function admRows(){const q=A.q.toLowerCase();return (A.rows||[]).filter(r=>(A.f==='all'||r.status===A.f)&&(!q||[r.shop,r.name,r.email,r.phone,r.whatsapp,r.state,r.payment_pref,r.requirements].join(' ').toLowerCase().includes(q)))}
+function admBody(){if(A.loading&&!A.rows)return '<p class="rq-empty">Loading accounts...</p>';if(A.err)return '<p class="rq-empty">'+esc(A.err)+'</p>';const rows=admRows();
+ if(!rows.length)return '<p class="rq-empty">No accounts match.</p>';
+ return '<div class="adm-wrap"><table class="adm-tbl"><thead><tr><th>Shop</th><th>Name</th><th>Email</th><th>Phone</th><th>WhatsApp</th><th>State</th><th>Payment</th><th>Looking for</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody>'
+ +rows.map(r=>{const ok=r.status==='approved',wa=waLink(r.whatsapp);return '<tr data-row="'+esc(r.id)+'"><td data-l="Shop"><b>'+esc(r.shop)+'</b></td><td data-l="Name">'+esc(r.name)+'</td><td data-l="Email"><a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a></td>'
+  +'<td data-l="Phone">'+(r.phone?'<a href="tel:+1'+us10(r.phone)+'">'+esc(r.phone)+'</a>':'-')+'</td><td data-l="WhatsApp">'+(wa?'<a href="'+esc(wa)+'" target="_blank" rel="noopener">'+esc(r.whatsapp)+'</a>':'-')+'</td><td data-l="State">'+esc(r.state||'-')+'</td><td data-l="Payment">'+esc(r.payment_pref||'-')+'</td>'
+  +'<td data-l="Looking for" class="adm-req">'+esc(r.requirements||'-')+'</td><td data-l="Joined">'+esc(fdate(r.created_at))+'</td><td data-l="Status"><span class="aa-badge sm '+(ok?'is-ok':'is-wait')+'"><i aria-hidden="true"></i>'+(ok?'Approved':'Pending')+'</span></td>'
+  +'<td class="adm-act"><button type="button" class="rq-btn aa-sm'+(ok?' ghost':'')+'" data-aa="adm-set" data-id="'+esc(r.id)+'" data-to="'+(ok?'pending':'approved')+'">'+(ok?'Revoke':'Approve')+'</button></td></tr>'}).join('')+'</tbody></table></div>'}
+function admCount(){const r=A.rows||[];return r.length+' accounts, '+r.filter(x=>x.status!=='approved').length+' pending, showing '+admRows().length}
+function admPaintBody(pg){$$('[data-adm-body]',pg).forEach(e=>{e.innerHTML=admBody()});$$('[data-adm-count]',pg).forEach(e=>{e.textContent=A.rows?admCount():''})}
+function paintAdmin(pg){setH1(pg,'Retailer accounts');
+ if(!SESS){paint(pg,s=>'<p class="rq-lead" style="margin-bottom:18px">Team sign-in.</p>'+formSignin(s,'admin'));return}
+ if(!isAdmin()){paint(pg,()=>'<div class="rq-card aa-card aa-msg"><h2 class="rq-h2">Not authorised</h2><p>This account does not have access to this page.</p><p><button type="button" class="rq-btn ghost" data-aa="signout">Sign out</button></p></div>');return}
+ paint(pg,s=>'<div class="adm-bar"><div class="rq-f"><label for="adm-q-'+s+'">Search</label><input class="rq-in" id="adm-q-'+s+'" type="search" data-aa-in="q" autocomplete="off" placeholder="Shop, name, email, phone, state" value="'+esc(A.q)+'"></div>'
+  +'<div class="rq-f"><label for="adm-f-'+s+'">Show</label><select class="rq-sel" id="adm-f-'+s+'" data-aa-in="f">'+opt('all',A.f==='all','All')+opt('pending',A.f==='pending','Pending')+opt('approved',A.f==='approved','Approved')+'</select></div>'
+  +'<div class="adm-tools"><button type="button" class="rq-btn ghost aa-sm" data-aa="adm-copy">Copy emails</button><button type="button" class="rq-btn ghost aa-sm" data-aa="adm-reload">Refresh</button><button type="button" class="rq-btn ghost aa-sm" data-aa="signout">Sign out</button></div></div>'
+  +'<p class="aa-count" data-adm-count role="status"></p><div class="rq-card adm-card" data-adm-body></div>');
+ admPaintBody(pg);if(!A.rows&&!A.loading)admLoad()}
+async function admLoad(){const pg=$('#app>main:not([hidden])');A.loading=true;A.err='';admPaintBody(pg);
+ try{A.rows=await B.listProfiles()}catch(e){A.rows=A.rows||null;A.err=emsg(e,'admin')}A.loading=false;admPaintBody($('#app>main:not([hidden])'))}
+async function admSet(id,to,btn){const r=(A.rows||[]).find(x=>x.id===id);if(!r)return;const was=r.status;btn.disabled=true;r.status=to;admPaintBody($('#app>main:not([hidden])'));
+ try{await B.setStatus(id,to);toast((to==='approved'?'Approved: ':'Revoked: ')+(r.shop||r.email))}catch(e){r.status=was;admPaintBody($('#app>main:not([hidden])'));toast(emsg(e,'admin'))}}
+function copyText(t){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t).then(()=>true,()=>false);return new Promise(r=>{const x=document.createElement('textarea');x.value=t;x.setAttribute('readonly','');x.style.cssText='position:fixed;left:-9999px';document.body.appendChild(x);x.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}x.remove();r(ok)})}
+document.addEventListener('input',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in]');if(!i||state.page!=='admin')return;if(i.dataset.aaIn==='q')A.q=i.value;else A.f=i.value;const pg=$('#app>main:not([hidden])');$$('[data-aa-in='+i.dataset.aaIn+']',pg).forEach(x=>{if(x!==i)x.value=i.value});admPaintBody(pg)});
+document.addEventListener('change',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in=f]');if(i)i.dispatchEvent(new Event('input',{bubbles:true}))});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-aa]');if(!a)return;const k=a.dataset.aa,pg=a.closest('main');
+ if(k==='view'){e.preventDefault();const v=a.dataset.v;paintSignin(pg,v,new URLSearchParams(location.search).get('next')||'')}
+ else if(k==='signout')doSignOut();
+ else if(k==='resend'){const em=a.dataset.email;if(coolLeft(em))return;a.disabled=true;B.resend(em).then(()=>{markResend(em);toast('Confirmation email sent');tickResend()},e=>{a.disabled=false;toast(emsg(e,'resend'))})}
+ else if(k==='restart'){if(state.page==='signin')go('/account/signup');else{setH1(pg,'Create your account');paintSignup(pg)}}
+ else if(k==='edit-on'){D.edit=true;paintDash(pg)}else if(k==='edit-off'){D.edit=false;paintDash(pg)}
+ else if(k==='reorder')reorder(a.dataset.id);
+ else if(k==='pq-add'||k==='pq-one'){const q=(D.q||[]).find(x=>String(x.id)===a.dataset.id);if(!q)return;const its=(q.payload&&q.payload.items)||[];toast(addMsg(addItems(k==='pq-one'?[its[+a.dataset.i]].filter(Boolean):its)))}
+ else if(k==='adm-set')admSet(a.dataset.id,a.dataset.to,a);
+ else if(k==='adm-reload'){A.rows=null;admLoad()}
+ else if(k==='adm-copy'){const em=[...new Set(admRows().map(r=>r.email).filter(Boolean))];if(!em.length){toast('No emails to copy');return}copyText(em.join(', ')).then(ok=>toast(ok?'Copied '+em.length+' email'+(em.length>1?'s':''):'Could not copy. Select the emails manually.'))}});
+
+// ---- route hook: returns true when it redirected (the caller stops)
+function authRoute(){const p=state.page;closeMenus();acctNav();if(p!=='signin')RECOV='';if(p!=='account')WELCOME=false;
+ if(!['signup','signin','account','admin'].includes(p)){quotePrompt($('#app>main:not([hidden])'));paintPast($('#app>main:not([hidden])'));return false}
+ const pg=$('#app>main:not([hidden])'),nx=new URLSearchParams(location.search).get('next')||'';
+ if(!AUTH_ON){soonState(pg);return false}
+ if(p==='signup'){if(SESS){go(nextPath(nx)||'/account',true);return true}paintSignup(pg);return false}
+ if(p==='signin'){if(RECOV){paintSignin(pg,'recovery');return false}if(SESS){go(nextPath(nx)||'/account',true);return true}paintSignin(pg,'in',nx);return false}
+ if(p==='account'){if(!SESS){go('/account/signin?next=account',true);return true}D.edit=false;paintDash(pg);loadDash();return false}
+ if(p==='admin'){paintAdmin(pg);return false}
+ return false}
+
+// ---- mobile menu (the hamburger had no menu): Shop, Brands, New, Trending, FAQ, Contact, Account
+let mnN=0;
+function closeMenus(){$$('.ra-mnav').forEach(n=>{n.hidden=true});$$('a[data-noop][aria-label=Menu]').forEach(b=>b.setAttribute('aria-expanded','false'))}
+function mkMenu(b){const hd=b.parentElement;let n=$('.ra-mnav',hd);if(n)return n;n=document.createElement('nav');n.className='ra-mnav';n.id='ra-mnav-'+(++mnN);n.setAttribute('aria-label','Menu');n.hidden=true;
+ n.innerHTML=[['/shop/c/all','Shop'],['/shop/brands','Brands'],['/shop/c/new','New arrivals'],['/shop/c/trending','Trending'],['/shop/faq','FAQ'],['/shop/contact','Contact']].map(x=>'<a href="'+x[0]+'">'+x[1]+'</a>').join('')
+  +'<a href="/shop/account/signin" data-ra-acct class="ra-mnav-acct">Sign in</a><a href="/shop/account/signup" data-ra-acct-cta class="ra-mnav-c">Create account</a><a href="/shop/quote" class="ra-mnav-q">Get a Quote</a>';
+ hd.appendChild(n);b.setAttribute('aria-controls',n.id);return n}
+document.addEventListener('click',e=>{const b=e.target.closest('a[data-noop][aria-label=Menu]');
+ if(b){const n=mkMenu(b),open=n.hidden;closeMenus();if(open){n.hidden=false;b.setAttribute('aria-expanded','true');acctNav()}return}
+ if(e.target.closest('.ra-mnav a')){closeMenus();return}
+ if(!e.target.closest('.ra-mnav'))closeMenus()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus();if(e.key===' '&&e.target.matches&&e.target.matches('a[data-noop][aria-label=Menu]')){e.preventDefault();e.target.click()}});
+
+// ---- boot: signed-in visitors get their profile, saved cart and any unsent quote history on load
+setTimeout(async()=>{acctNav();if(!(SESS&&AUTH_ON))return;await loadProfile();await pullMerge(false);flushQuotes(false);retryNotify();if(state.page==='quote')prefillQuote($('#app>main:not([hidden])'));quotePrompt($('#app>main:not([hidden])'))},0);
 // init
 $$('[data-faq-answer]').forEach(a=>a.classList.add('hidden'));
 $$('a[href^="#"]').forEach(a=>{});

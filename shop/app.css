@@ -453,5 +453,5 @@ html:has(.rac.is-in){scroll-padding-bottom:260px}
 .mob .qp-row{flex-direction:column;align-items:stretch}
 .qp-ta{width:100%;font-size:14px;line-height:1.55}
 .qp-h3{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;font-size:22px;margin:24px 0 8px}
-.qp-prev{display:block;width:100%;height:560px;border:1px solid #2a2a2d;border-radius:14px;background:#0a0a0a;margin:12px 0 14px}.mob .qp-prev{height:520px}
+.qp-prev{display:block;width:100%;max-height:560px;overflow:auto;border:1px solid #2a2a2d;border-radius:14px;background:#0a0a0a;margin:12px 0 14px;pointer-events:none;-webkit-user-select:none;user-select:none}.qp-prev img{max-width:100%;height:auto}.mob .qp-prev{max-height:520px}
 .qp .aa-btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}

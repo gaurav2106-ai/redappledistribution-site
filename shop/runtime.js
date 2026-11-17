@@ -608,6 +608,7 @@ function qDraft(r){const first=String(r.name||'').trim().split(/\s+/)[0],link=qL
   'Open your quote summary: '+link,'','It opens as a short teaser animation: your shop name and each product with its quantity appear one by one. It shows product names and quantities only, so please use our reply for the pricing.','',
   'Reply to this email or message us on WhatsApp at +1 (502) 616-3671 and we will take it from there.','','Thank you,','Red Apple Distribution Sales','sales@redappledistro.com | (347) 937-9103'].join('\n');
  return{subject,body,link}}
+function qPrevBody(h){try{const d=new DOMParser().parseFromString(h,'text/html');d.querySelectorAll('script,iframe,link,style,meta,title,base,object,embed,form').forEach(n=>n.remove());d.querySelectorAll('a').forEach(a=>{a.removeAttribute('href');a.removeAttribute('target')});d.querySelectorAll('*').forEach(n=>{[...n.attributes].forEach(at=>{if(/^on/i.test(at.name))n.removeAttribute(at.name)})});return d.body.innerHTML}catch(e){return ''}}
 function qHtml(r){const sh=r.shop||'there';return QR_TPL.split('{{SHOP}}').join(esc(sh)).split('{{LINK}}').join(qLink(r))}
 function qBody(){if(A.qloading&&!A.quotes)return '<p class="rq-empty">Loading quotes...</p>';if(A.qerr)return '<p class="rq-empty">'+esc(A.qerr)+'</p>';const rows=qFiltered();
  if(!rows.length)return '<p class="rq-empty">No quotes match.</p>';
@@ -625,7 +626,7 @@ function qPanel(s){const r=qRows().find(x=>x.id===A.qOpen);if(!r||!r.replied)ret
  +'<div class="rq-f"><label for="qp-b-'+s+'">Email draft</label><textarea class="rq-ta qp-ta" id="qp-b-'+s+'" readonly rows="15">'+esc(d.body)+'</textarea></div>'
  +'<div class="aa-btns"><button type="button" class="rq-btn aa-sm" data-aa="q-copyemail" data-id="'+esc(r.id)+'">Copy email</button>'+(mt?'<a class="rq-btn ghost aa-sm" data-qp-mailto href="'+esc(mt)+'">Open in email app</a>':'<span class="rq-note">No email on file for this retailer.</span>')+'</div>'
  +'<h3 class="qp-h3">Branded HTML email</h3><p class="rq-note">The plain text above works in any mail client. For the animated teaser version, paste this HTML into a mail client or email tool that supports HTML. The teaser GIF is hosted at redappledistribution.com. Nothing is sent from this page.</p>'
- +'<iframe class="qp-prev" title="HTML email preview" sandbox srcdoc="'+esc(prev)+'"></iframe><div class="aa-btns"><button type="button" class="rq-btn ghost aa-sm" data-aa="q-copyhtml" data-id="'+esc(r.id)+'">Copy HTML</button></div></div>'}
+ +'<div class="qp-prev" role="img" aria-label="HTML email preview">'+qPrevBody(prev)+'</div><div class="aa-btns"><button type="button" class="rq-btn ghost aa-sm" data-aa="q-copyhtml" data-id="'+esc(r.id)+'">Copy HTML</button></div></div>'}
 function admPaintQ(pg,panel){$$('[data-adm-qbody]',pg).forEach(e=>{e.innerHTML=qBody()});$$('[data-adm-qcount]',pg).forEach(e=>{const r=qRows();e.textContent=A.quotes?r.length+' quotes, '+r.filter(x=>!x.replied).length+' awaiting reply, showing '+qFiltered().length:''});
  if(panel)$$('[data-adm-qpanel]',pg).forEach(e=>{e.innerHTML=qPanel(sfxOf(e))})}
 async function admQLoad(){const pg=$('#app>main:not([hidden])');A.qloading=true;A.qerr='';admPaintQ(pg);

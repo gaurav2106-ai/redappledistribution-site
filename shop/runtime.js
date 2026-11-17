@@ -38,11 +38,11 @@ function list(slug,q){let l;if(slug==='all')l=P;else if(slug==='new'||slug==='tr
 function scale(){const w=innerWidth;$$('.dsk').forEach(e=>{e.style.zoom=w<1440&&(w>=900||e.classList.contains('all'))?w/1440:1});$$('.mob').forEach(e=>{e.style.zoom=Math.min(w,520)/390});$$('.agegate-wrap').forEach((x,i)=>{x.dataset.mode=i?'m':'d'})}
 // ---- routes
 function route(){fixUrl();let pathq=curPath();const qs=new URLSearchParams(location.search);let seg=pathq.split('/');if(seg[0]==='p'&&AL[seg[1]]){seg[1]=String(AL[seg[1]]);pathq=seg.join('/');history.replaceState(null,'',BASE+pathq+location.search)}let page='home';
- if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='account')page=!seg[1]?'account':(seg[1]==='signup'||seg[1]==='signin')&&!seg[2]?seg[1]:'nf';else if(seg[0]==='admin')page='admin';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
+ if(seg[0]==='c')page='cat';else if(seg[0]==='p')page='prod';else if(seg[0]==='brands')page='brands';else if(seg[0]==='brand')page='brand';else if(seg[0]==='account')page=!seg[1]?'account':(seg[1]==='signup'||seg[1]==='signin')&&!seg[2]?seg[1]:'nf';else if(seg[0]==='admin')page='admin';else if(seg[0]==='quote-summary'&&!seg[1])page='qsum';else if(seg[0]==='order'){history.replaceState(null,'',BASE+'quote');return route()}else if(['about','contact','faq','policy','terms','privacy','returns','quote','review','reviews'].includes(seg[0]))page=seg[0];else if(seg[0]!==''&&seg[0]!==undefined)page='nf';
  if(page==='cat'&&!TITLES[seg[1]])page='nf';if(page==='prod'&&!byId(seg[1]))page='nf';
  $$('#app>main').forEach(m=>m.hidden=m.dataset.page!==page);
  state={page,slug:seg[1],id:seg[1],brand:decodeURIComponent(seg[1]||''),q:qs.get('q')||''};vis=12;
- render();if(authRoute())return;window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',policy:'Shipping and Delivery | Red Apple Distribution',terms:'Terms of Sale | Red Apple Distribution',privacy:'Privacy Policy | Red Apple Distribution',returns:'Returns and Credits | Red Apple Distribution',contact:'Contact Red Apple Distribution',signup:'Create a Retailer Account | Red Apple Distribution',signin:'Sign In | Red Apple Distribution',account:'Your Account | Red Apple Distribution',admin:'Admin | Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?((bd(byId(seg[1]))?bd(byId(seg[1]))+' ':'')+strip(byId(seg[1]))):page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq);seoProd()}
+ render();if(authRoute())return;window.scrollTo(0,0);scale();document.title=({home:'Red Apple Distribution | Wholesale for US Smoke Shops',quote:'Get a Quote | Red Apple Distribution',review:'Write a Review | Red Apple Distribution',reviews:'Customer Reviews | Red Apple Distribution',about:'About Red Apple Distribution | US Wholesale Supplier',policy:'Shipping and Delivery | Red Apple Distribution',terms:'Terms of Sale | Red Apple Distribution',privacy:'Privacy Policy | Red Apple Distribution',returns:'Returns and Credits | Red Apple Distribution',contact:'Contact Red Apple Distribution',signup:'Create a Retailer Account | Red Apple Distribution',signin:'Sign In | Red Apple Distribution',account:'Your Account | Red Apple Distribution',admin:'Admin | Red Apple Distribution',qsum:'Your quote is ready | Red Apple Distribution'})[page]||('Red Apple Distribution | '+(page==='cat'?TITLES[seg[1]]:page==='prod'?((bd(byId(seg[1]))?bd(byId(seg[1]))+' ':'')+strip(byId(seg[1]))):page[0].toUpperCase()+page.slice(1)));seoTags(page,pathq);seoProd()}
 function render(){const pg=$('#app>main:not([hidden])');if(!pg)return;const s=state;
  if(s.page==='home'){$$('[data-grid=home-trending]',pg).forEach(c=>fillGrid(c,(PICKS.trending||[]).map(byId).filter(Boolean).slice(0,4),fillCard))}
  if(s.page==='cat'){const l=list(s.slug,s.q),title=s.q?'Search results':TITLES[s.slug];$$('[data-f=cat-title]',pg).forEach(e=>setText(e,title));$$('[data-f=cat-crumb]',pg).forEach(e=>setText(e,title));
@@ -137,10 +137,10 @@ function fixUrl(){const l=location;let path=l.pathname,search=l.search,hash=l.ha
 }
 function go(p,rep){const u=BASE.slice(0,-1)+(p.charAt(0)==='/'?p:'/'+p),f=u==='/shop'?BASE:u;if(f===location.pathname+location.search){window.scrollTo(0,0);return}history[rep?'replaceState':'pushState'](null,'',f);route()}
 function cardLink(e,path,label){e.style.cursor='pointer';$$('.ra-cardlink',e).forEach(x=>x.remove());const a=document.createElement('a');a.className='ra-cardlink';a.href=BASE.slice(0,-1)+path;a.setAttribute('aria-label',label||'Open');e.appendChild(a)}
-function seoTags(page,path){const fixed=page==='home'?BASE:['signup','signin','account','admin'].includes(page)?BASE+path+'/':(page==='cat'||page==='prod'||page==='brand')?BASE+path:FIXED.includes(page)?BASE+page+'/':BASE;
+function seoTags(page,path){const fixed=page==='home'?BASE:['signup','signin','account','admin','qsum'].includes(page)?BASE+path+'/':(page==='cat'||page==='prod'||page==='brand')?BASE+path:FIXED.includes(page)?BASE+page+'/':BASE;
  const cp=page==='cat'?BASE+'c/'+path.split('/')[1]+'/':fixed,u=SITE+(page==='prod'||page==='brand'?BASE+path:cp);
  let c=$('link[rel=canonical]');if(!c){c=document.createElement('link');c.rel='canonical';document.head.appendChild(c)}c.href=u;
- const og=$('meta[property="og:url"]');if(og)og.content=u;const rb=$('meta[name=robots]');if(rb)rb.content=page==='nf'?'noindex,follow':(page==='account'||page==='admin')?'noindex,nofollow':'index,follow'}
+ const og=$('meta[property="og:url"]');if(og)og.content=u;const rb=$('meta[name=robots]');if(rb)rb.content=page==='nf'?'noindex,follow':(page==='account'||page==='admin'||page==='qsum')?'noindex,nofollow':'index,follow'}
 document.addEventListener('click',e=>{if(e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const a=e.target.closest('a[href]');if(!a||a.target&&a.target!=='_self'||a.hasAttribute('download'))return;
  if(a.hasAttribute('data-noop')){e.preventDefault();return}
  const raw=a.getAttribute('href');let u;try{u=new URL(a.href,location.href)}catch(x){return}if(u.origin!==location.origin)return;
@@ -295,6 +295,9 @@ const remoteB={
  async saveCart(c,keep){const ts=new Date().toISOString();await authed('/rest/v1/carts?on_conflict=user_id',{method:'POST',keepalive:keep,headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:{user_id:SESS.user.id,cart:c,updated_at:ts}});return ts},
  async listQuotes(){return authed('/rest/v1/quotes?user_id=eq.'+encodeURIComponent(SESS.user.id)+'&select=id,payload,total_boxes,created_at&order=created_at.desc&limit=50')},
  async saveQuote(payload,total){const r=await authed('/rest/v1/quotes',{method:'POST',headers:{Prefer:'return=representation'},body:{user_id:SESS.user.id,payload,total_boxes:total}});return r&&r[0]||null},
+ async listAllQuotes(){return authed('/rest/v1/quotes?select=id,share_token,replied_at,created_at,total_boxes,payload,user_id&order=created_at.desc&limit=500')},
+ async markReplied(id){const r=await authed('/rest/v1/quotes?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=representation'},body:{replied_at:new Date().toISOString()}});if(!r||!r.length)throw new AErr('not allowed','42501',403);return r[0]},
+ async getSummary(t){return raw('/rest/v1/rpc/get_quote_summary',{method:'POST',body:{t}})},
  async listProfiles(){return authed('/rest/v1/profiles?select=*&order=created_at.desc&limit=1000')},
  async setStatus(id,status){const r=await authed('/rest/v1/profiles?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:{Prefer:'return=representation'},body:{status}});if(!r||!r.length)throw new AErr('not allowed','42501',403);return r[0]}
 };
@@ -318,7 +321,10 @@ const mockB=(()=>{const L=()=>ld('ra_mock_db',{users:{},carts:{},quotes:[],mail:
  async getCart(){await W();need();return L().carts[SESS.user.id]||null},
  async saveCart(c,keep){need();const d=L(),ts=new Date().toISOString();d.carts[SESS.user.id]={cart:JSON.parse(JSON.stringify(c)),updated_at:ts};S(d);return ts},
  async listQuotes(){await W();need();return L().quotes.filter(q=>q.user_id===SESS.user.id).sort((a,b)=>b.created_at<a.created_at?-1:1)},
- async saveQuote(payload,total){await W();need();const d=L(),q={id:'q-'+Math.random().toString(36).slice(2,10),user_id:SESS.user.id,payload:JSON.parse(JSON.stringify(payload)),total_boxes:total,created_at:new Date().toISOString()};d.quotes.push(q);S(d);return q},
+ async saveQuote(payload,total){await W();need();const d=L(),q={id:'q-'+Math.random().toString(36).slice(2,10),user_id:SESS.user.id,payload:JSON.parse(JSON.stringify(payload)),total_boxes:total,created_at:new Date().toISOString(),share_token:Array.from({length:24},()=>'0123456789abcdef'[Math.floor(Math.random()*16)]).join(''),replied_at:null};d.quotes.push(q);S(d);return q},
+ async listAllQuotes(){await W();adm();return L().quotes.slice().sort((a,b)=>b.created_at<a.created_at?-1:1)},
+ async markReplied(id){await W();adm();const d=L(),q=d.quotes.find(x=>x.id===id);if(!q)throw new AErr('not found','404',404);q.replied_at=new Date().toISOString();S(d);return Object.assign({},q)},
+ async getSummary(t){await W();const d=L(),q=d.quotes.find(x=>x.share_token&&x.share_token===t&&x.replied_at);if(!q)return null;const u=byId_(d,q.user_id),pl=q.payload||{};return{ref:pl.ref,shop:(u&&u.profile.shop)||'',replied_at:q.replied_at,items:pl.items||[]}},
  async listProfiles(){await W();adm();return Object.values(L().users).map(u=>Object.assign({},u.profile)).sort((a,b)=>b.created_at<a.created_at?-1:1)},
  async setStatus(id,status){await W();adm();const d=L(),u=byId_(d,id);if(!u)throw new AErr('not found','404',404);u.profile.status=status;S(d);return Object.assign({},u.profile)}}})();
 const B=MOCK?mockB:remoteB;
@@ -563,7 +569,7 @@ async function loadDash(){const pg=$('#app>main:not([hidden])');paintDash(pg);
  if(!PROF)paint($('#app>main:not([hidden])'),()=>'<div class="rq-card aa-card aa-msg"><h2 class="rq-h2">We are setting up your profile</h2><p>This can take a moment. Please refresh the page, or contact us if it keeps happening.</p><p><button type="button" class="rq-btn" data-aa="signout">Sign out</button></p></div>')}
 
 // ---- admin approvals (UI check is cosmetic; the database policies decide)
-const A={rows:null,q:'',f:'all',err:'',loading:false};
+const A={rows:null,q:'',f:'all',err:'',loading:false,tab:'accounts',quotes:null,qerr:'',qloading:false,qq:'',qf:'all',qOpen:''};
 function admRows(){const q=A.q.toLowerCase();return (A.rows||[]).filter(r=>(A.f==='all'||r.status===A.f)&&(!q||[r.shop,r.name,r.email,r.phone,r.whatsapp,r.state,r.payment_pref,r.requirements].join(' ').toLowerCase().includes(q)))}
 function admBody(){if(A.loading&&!A.rows)return '<p class="rq-empty">Loading accounts...</p>';if(A.err)return '<p class="rq-empty">'+esc(A.err)+'</p>';const rows=admRows();
  if(!rows.length)return '<p class="rq-empty">No accounts match.</p>';
@@ -574,21 +580,68 @@ function admBody(){if(A.loading&&!A.rows)return '<p class="rq-empty">Loading acc
   +'<td class="adm-act"><button type="button" class="rq-btn aa-sm'+(ok?' ghost':'')+'" data-aa="adm-set" data-id="'+esc(r.id)+'" data-to="'+(ok?'pending':'approved')+'">'+(ok?'Revoke':'Approve')+'</button></td></tr>'}).join('')+'</tbody></table></div>'}
 function admCount(){const r=A.rows||[];return r.length+' accounts, '+r.filter(x=>x.status!=='approved').length+' pending, showing '+admRows().length}
 function admPaintBody(pg){$$('[data-adm-body]',pg).forEach(e=>{e.innerHTML=admBody()});$$('[data-adm-count]',pg).forEach(e=>{e.textContent=A.rows?admCount():''})}
+const ADMTAB=s=>'<div class="adm-tabs" role="tablist" aria-label="Admin sections"><button type="button" role="tab" class="adm-tab'+(A.tab==='accounts'?' on':'')+'" aria-selected="'+(A.tab==='accounts')+'" data-aa="adm-tab" data-tab="accounts">Accounts</button><button type="button" role="tab" class="adm-tab'+(A.tab==='quotes'?' on':'')+'" aria-selected="'+(A.tab==='quotes')+'" data-aa="adm-tab" data-tab="quotes">Quotes</button></div>';
 function paintAdmin(pg){setH1(pg,'Retailer accounts');
  if(!SESS){paint(pg,s=>'<p class="rq-lead" style="margin-bottom:18px">Team sign-in.</p>'+formSignin(s,'admin'));return}
  if(!isAdmin()){paint(pg,()=>'<div class="rq-card aa-card aa-msg"><h2 class="rq-h2">Not authorised</h2><p>This account does not have access to this page.</p><p><button type="button" class="rq-btn ghost" data-aa="signout">Sign out</button></p></div>');return}
- paint(pg,s=>'<div class="adm-bar"><div class="rq-f"><label for="adm-q-'+s+'">Search</label><input class="rq-in" id="adm-q-'+s+'" type="search" data-aa-in="q" autocomplete="off" placeholder="Shop, name, email, phone, state" value="'+esc(A.q)+'"></div>'
+ if(A.tab==='quotes'){setH1(pg,'Quotes');
+  paint(pg,s=>ADMTAB(s)+'<div class="adm-bar"><div class="rq-f"><label for="adm-qq-'+s+'">Search</label><input class="rq-in" id="adm-qq-'+s+'" type="search" data-aa-in="qq" autocomplete="off" placeholder="Shop, quote ref, email" value="'+esc(A.qq)+'"></div>'
+   +'<div class="rq-f"><label for="adm-qf-'+s+'">Show</label><select class="rq-sel" id="adm-qf-'+s+'" data-aa-in="qf">'+opt('all',A.qf==='all','All')+opt('awaiting',A.qf==='awaiting','Awaiting reply')+opt('replied',A.qf==='replied','Replied')+'</select></div>'
+   +'<div class="adm-tools"><button type="button" class="rq-btn ghost aa-sm" data-aa="adm-qreload">Refresh</button><button type="button" class="rq-btn ghost aa-sm" data-aa="signout">Sign out</button></div></div>'
+   +'<p class="aa-count" data-adm-qcount role="status"></p><div data-adm-qpanel></div><div class="rq-card adm-card" data-adm-qbody></div>');
+  admPaintQ(pg,true);if(!A.quotes&&!A.qloading)admQLoad();return}
+ paint(pg,s=>ADMTAB(s)+'<div class="adm-bar"><div class="rq-f"><label for="adm-q-'+s+'">Search</label><input class="rq-in" id="adm-q-'+s+'" type="search" data-aa-in="q" autocomplete="off" placeholder="Shop, name, email, phone, state" value="'+esc(A.q)+'"></div>'
   +'<div class="rq-f"><label for="adm-f-'+s+'">Show</label><select class="rq-sel" id="adm-f-'+s+'" data-aa-in="f">'+opt('all',A.f==='all','All')+opt('pending',A.f==='pending','Pending')+opt('approved',A.f==='approved','Approved')+'</select></div>'
   +'<div class="adm-tools"><button type="button" class="rq-btn ghost aa-sm" data-aa="adm-copy">Copy emails</button><button type="button" class="rq-btn ghost aa-sm" data-aa="adm-reload">Refresh</button><button type="button" class="rq-btn ghost aa-sm" data-aa="signout">Sign out</button></div></div>'
   +'<p class="aa-count" data-adm-count role="status"></p><div class="rq-card adm-card" data-adm-body></div>');
  admPaintBody(pg);if(!A.rows&&!A.loading)admLoad()}
+// ---- quotes: list, mark as replied (sets replied_at), summary link and email drafts. No email is sent from here.
+const QR_TPL="<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"color-scheme\" content=\"dark\"><meta name=\"supported-color-schemes\" content=\"dark\"><title>Your quote is ready<\/title><\/head>\n<body style=\"margin:0;padding:0;background:#0a0a0a\">\n<div style=\"display:none;max-height:0;overflow:hidden;opacity:0;color:#0a0a0a\">Your quote summary is ready. Tap to watch your products appear one by one.<\/div>\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#0a0a0a\"><tr><td align=\"center\" style=\"padding:28px 12px\">\n<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;width:100%;background:#141415;border:1px solid #2a2a2e;border-radius:20px;overflow:hidden\">\n<tr><td style=\"background:#e01515;padding:9px 16px;text-align:center;font:700 11px Arial,sans-serif;letter-spacing:2px;color:#ffffff\">ADULTS 21+ ONLY &nbsp;&bull;&nbsp; WHOLESALE FOR US RETAILERS<\/td><\/tr>\n<tr><td align=\"center\" style=\"padding:34px 40px 8px;background:#101012\"><img src=\"https://redappledistribution.com/shop/assets/email-logo.png\" width=\"200\" alt=\"Red Apple Distribution\" style=\"display:block;border:0;height:auto;width:200px;max-width:100%\"><\/td><\/tr>\n<tr><td align=\"center\" style=\"padding:0;background:#101012\"><a href=\"{{LINK}}\" style=\"display:block;text-decoration:none\"><img src=\"https://redappledistribution.com/shop/assets/quote-teaser.gif\" width=\"600\" alt=\"Your quote is ready. Open your quote summary to see your products.\" style=\"display:block;border:0;height:auto;width:100%;max-width:600px\"><\/a><\/td><\/tr>\n<tr><td style=\"padding:26px 40px 0\"><p style=\"margin:0 0 10px;font:700 11px Arial,sans-serif;letter-spacing:3px;color:#ff4a4a;text-transform:uppercase\">Wholesale quote<\/p>\n<h1 style=\"margin:0 0 16px;font:400 38px/1.05 Impact,'Arial Narrow Bold','Arial Black',Arial,sans-serif;letter-spacing:.5px;color:#ffffff;text-transform:uppercase\">Your quote is ready<\/h1>\n<p style=\"margin:0 0 14px;font:400 16px/1.6 Arial,sans-serif;color:#c9c9ce\">Hi {{SHOP}}, our team has replied to your quote request with pricing. We also put together a short summary of the products you asked for. Tap the button to watch it play, one product at a time.<\/p>\n<p style=\"margin:0 0 26px;font:400 14px/1.6 Arial,sans-serif;color:#a3a3a8\">The summary shows product names and quantities only. Please use our reply for the pricing.<\/p><\/td><\/tr>\n<tr><td align=\"center\" style=\"padding:0 40px 28px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\"><tr><td align=\"center\" bgcolor=\"#e01515\" style=\"border-radius:30px;background:linear-gradient(90deg,#e01515,#ff2b2b)\"><a href=\"{{LINK}}\" style=\"display:inline-block;padding:17px 40px;font:700 16px Arial,sans-serif;color:#ffffff;text-decoration:none;border-radius:30px\">View my quote summary<\/a><\/td><\/tr><\/table><\/td><\/tr>\n<tr><td style=\"padding:8px 40px 4px\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#1a0a0b;border:1px solid #3a1416;border-radius:14px\"><tr><td style=\"padding:20px 24px\"><p style=\"margin:0 0 8px;font:700 11px Arial,sans-serif;letter-spacing:2px;color:#ff4a4a;text-transform:uppercase\">Next step<\/p><p style=\"margin:0;font:400 14px/1.6 Arial,sans-serif;color:#d9d9dc\">Reply to this email, or message us on WhatsApp at +1 (502) 616-3671, and we will take it from there.<\/p><\/td><\/tr><\/table><\/td><\/tr>\n<tr><td style=\"padding:22px 40px 8px\"><p style=\"margin:0;font:400 12px/1.6 Arial,sans-serif;color:#8d8d94\">Button not working? Paste this link into your browser:<br><a href=\"{{LINK}}\" style=\"color:#ff6b6b;word-break:break-all\">{{LINK}}<\/a><\/p><\/td><\/tr>\n<tr><td style=\"padding:22px 40px 30px\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-top:1px solid #2a2a2e\"><tr><td style=\"padding-top:18px;font:400 12px/1.7 Arial,sans-serif;color:#8d8d94\"><strong style=\"color:#d9d9dc\">Red Apple Distribution<\/strong> &nbsp;|&nbsp; Wholesale for US smoke shops<br>Quotes in about a minute &nbsp;|&nbsp; <a href=\"https://redappledistribution.com/shop/\" style=\"color:#ff6b6b;text-decoration:none\">redappledistribution.com<\/a> &nbsp;|&nbsp; <a href=\"mailto:sales@redappledistro.com\" style=\"color:#ff6b6b;text-decoration:none\">sales@redappledistro.com<\/a> &nbsp;|&nbsp; (347) 937-9103<\/td><\/tr><\/table><\/td><\/tr>\n<\/table><\/td><\/tr><\/table><\/body><\/html>\n";
+const SUMMARY_ORIGIN=()=>(MOCK||LOCALH)?location.origin:'https://redappledistribution.com';
+function qRows(){const pr={};(A.rows||[]).forEach(x=>{pr[x.id]=x});return (A.quotes||[]).map(q=>{const p=pr[q.user_id]||{},pl=q.payload||{};
+ return{id:q.id,tok:q.share_token||'',replied:q.replied_at||'',created:q.created_at,boxes:+q.total_boxes||0,ref:String(pl.ref||String(q.id).slice(0,8)),shop:p.shop||pl.shop||'',name:p.name||pl.contact||'',email:p.email||pl.email||''}})}
+function qFiltered(){const k=A.qq.toLowerCase();return qRows().filter(r=>(A.qf==='all'||(A.qf==='replied')===!!r.replied)&&(!k||[r.shop,r.ref,r.email,r.name].join(' ').toLowerCase().includes(k)))}
+const qLink=r=>SUMMARY_ORIGIN()+'/shop/quote-summary/?t='+encodeURIComponent(r.tok);
+function qDraft(r){const first=String(r.name||'').trim().split(/\s+/)[0],link=qLink(r);
+ const subject='Your Red Apple quote is ready - '+r.ref;
+ const body=['Hi '+(first||'there')+',','','Thank you for your quote request '+r.ref+'. We have replied with your pricing, and we put together a short summary of the products you asked for.','',
+  'Open your quote summary: '+link,'','It opens as a short teaser animation: your shop name and each product with its quantity appear one by one. It shows product names and quantities only, so please use our reply for the pricing.','',
+  'Reply to this email or message us on WhatsApp at +1 (502) 616-3671 and we will take it from there.','','Thank you,','Red Apple Distribution Sales','sales@redappledistro.com | (347) 937-9103'].join('\n');
+ return{subject,body,link}}
+function qHtml(r){const sh=r.shop||'there';return QR_TPL.split('{{SHOP}}').join(esc(sh)).split('{{LINK}}').join(qLink(r))}
+function qBody(){if(A.qloading&&!A.quotes)return '<p class="rq-empty">Loading quotes...</p>';if(A.qerr)return '<p class="rq-empty">'+esc(A.qerr)+'</p>';const rows=qFiltered();
+ if(!rows.length)return '<p class="rq-empty">No quotes match.</p>';
+ return '<div class="adm-wrap"><table class="adm-tbl adm-qt"><thead><tr><th>Shop</th><th>Quote ref</th><th>Date</th><th>Boxes</th><th>Status</th><th></th></tr></thead><tbody>'
+ +rows.map(r=>'<tr data-qrow="'+esc(r.id)+'"><td data-l="Shop"><b>'+esc(r.shop||'-')+'</b>'+(r.email?'<span class="adm-sub">'+esc(r.email)+'</span>':'')+'</td><td data-l="Quote ref">'+esc(r.ref)+'</td><td data-l="Date">'+esc(fdate(r.created))+'</td><td data-l="Boxes">'+esc(fb(r.boxes))+'</td>'
+  +'<td data-l="Status"><span class="aa-badge sm '+(r.replied?'is-ok':'is-wait')+'"><i aria-hidden="true"></i>'+(r.replied?'Replied':'Awaiting reply')+'</span>'+(r.replied?'<span class="adm-sub">'+esc(fdate(r.replied))+'</span>':'')+'</td>'
+  +'<td class="adm-act">'+(r.replied?'<button type="button" class="rq-btn aa-sm" data-aa="q-copylink" data-id="'+esc(r.id)+'">Copy link</button> <button type="button" class="rq-btn ghost aa-sm" data-aa="q-open" data-id="'+esc(r.id)+'">Email draft</button>'
+   :'<button type="button" class="rq-btn aa-sm" data-aa="q-reply" data-id="'+esc(r.id)+'">Mark as replied and get summary</button>')+'</td></tr>').join('')+'</tbody></table></div>'}
+function qPanel(s){const r=qRows().find(x=>x.id===A.qOpen);if(!r||!r.replied)return '';const d=qDraft(r),mt=r.email?'mailto:'+encodeURIComponent(r.email).replace(/%40/g,'@')+'?subject='+encodeURIComponent(d.subject)+'&body='+encodeURIComponent(d.body.replace(/\n/g,'\r\n')):'';
+ const prev=qHtml(r).split('https://redappledistribution.com/shop/assets/quote-teaser.gif').join('/shop/assets/quote-teaser.gif');
+ return '<div class="rq-card qp" data-qp="'+esc(r.id)+'"><div class="qp-h"><div><p class="rq-pill">Summary ready</p><h2 class="rq-h2">'+esc(r.shop||'Retailer')+' - '+esc(r.ref)+'</h2></div><button type="button" class="rq-btn ghost aa-sm" data-aa="q-close">Close</button></div>'
+ +'<p class="rq-note qp-warn">Send this only after you have replied to the retailer with pricing. The summary page shows product names and quantities only, never prices or contact details.</p>'
+ +'<div class="rq-f"><label for="qp-l-'+s+'">Summary link</label><div class="qp-row"><input class="rq-in" id="qp-l-'+s+'" readonly value="'+esc(d.link)+'" data-qp-link><button type="button" class="rq-btn aa-sm" data-aa="q-copylink" data-id="'+esc(r.id)+'">Copy link</button></div></div>'
+ +'<div class="rq-f"><label for="qp-s-'+s+'">Email subject</label><input class="rq-in" id="qp-s-'+s+'" readonly value="'+esc(d.subject)+'"></div>'
+ +'<div class="rq-f"><label for="qp-b-'+s+'">Email draft</label><textarea class="rq-ta qp-ta" id="qp-b-'+s+'" readonly rows="15">'+esc(d.body)+'</textarea></div>'
+ +'<div class="aa-btns"><button type="button" class="rq-btn aa-sm" data-aa="q-copyemail" data-id="'+esc(r.id)+'">Copy email</button>'+(mt?'<a class="rq-btn ghost aa-sm" data-qp-mailto href="'+esc(mt)+'">Open in email app</a>':'<span class="rq-note">No email on file for this retailer.</span>')+'</div>'
+ +'<h3 class="qp-h3">Branded HTML email</h3><p class="rq-note">The plain text above works in any mail client. For the animated teaser version, paste this HTML into a mail client or email tool that supports HTML. The teaser GIF is hosted at redappledistribution.com. Nothing is sent from this page.</p>'
+ +'<iframe class="qp-prev" title="HTML email preview" sandbox srcdoc="'+esc(prev)+'"></iframe><div class="aa-btns"><button type="button" class="rq-btn ghost aa-sm" data-aa="q-copyhtml" data-id="'+esc(r.id)+'">Copy HTML</button></div></div>'}
+function admPaintQ(pg,panel){$$('[data-adm-qbody]',pg).forEach(e=>{e.innerHTML=qBody()});$$('[data-adm-qcount]',pg).forEach(e=>{const r=qRows();e.textContent=A.quotes?r.length+' quotes, '+r.filter(x=>!x.replied).length+' awaiting reply, showing '+qFiltered().length:''});
+ if(panel)$$('[data-adm-qpanel]',pg).forEach(e=>{e.innerHTML=qPanel(sfxOf(e))})}
+async function admQLoad(){const pg=$('#app>main:not([hidden])');A.qloading=true;A.qerr='';admPaintQ(pg);
+ const [q,pr]=await Promise.all([B.listAllQuotes().then(x=>({x}),e=>({e})),A.rows?Promise.resolve(A.rows):B.listProfiles().catch(()=>null)]);
+ if(pr)A.rows=pr;if(q.e){A.qerr=emsg(q.e,'admin');A.quotes=A.quotes||null}else A.quotes=q.x||[];A.qloading=false;if(A.tab==='quotes')admPaintQ($('#app>main:not([hidden])'),true)}
+async function qReply(id,btn){const r=qRows().find(x=>x.id===id);if(!r)return;if(!r.tok){toast('This quote has no summary link yet');return}btn.disabled=true;
+ try{const u=await B.markReplied(id),q=A.quotes.find(x=>x.id===id);q.replied_at=(u&&u.replied_at)||new Date().toISOString();A.qOpen=id;const pg=$('#app>main:not([hidden])');admPaintQ(pg,true);toast('Marked as replied: '+(r.shop||r.ref));
+  const el=$$('[data-adm-qpanel] .qp',pg).find(e=>e.offsetParent!==null);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+ catch(e){btn.disabled=false;toast(emsg(e,'admin'))}}
 async function admLoad(){const pg=$('#app>main:not([hidden])');A.loading=true;A.err='';admPaintBody(pg);
  try{A.rows=await B.listProfiles()}catch(e){A.rows=A.rows||null;A.err=emsg(e,'admin')}A.loading=false;admPaintBody($('#app>main:not([hidden])'))}
 async function admSet(id,to,btn){const r=(A.rows||[]).find(x=>x.id===id);if(!r)return;const was=r.status;btn.disabled=true;r.status=to;admPaintBody($('#app>main:not([hidden])'));
  try{await B.setStatus(id,to);toast((to==='approved'?'Approved: ':'Revoked: ')+(r.shop||r.email))}catch(e){r.status=was;admPaintBody($('#app>main:not([hidden])'));toast(emsg(e,'admin'))}}
 function copyText(t){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t).then(()=>true,()=>false);return new Promise(r=>{const x=document.createElement('textarea');x.value=t;x.setAttribute('readonly','');x.style.cssText='position:fixed;left:-9999px';document.body.appendChild(x);x.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}x.remove();r(ok)})}
-document.addEventListener('input',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in]');if(!i||state.page!=='admin')return;if(i.dataset.aaIn==='q')A.q=i.value;else A.f=i.value;const pg=$('#app>main:not([hidden])');$$('[data-aa-in='+i.dataset.aaIn+']',pg).forEach(x=>{if(x!==i)x.value=i.value});admPaintBody(pg)});
-document.addEventListener('change',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in=f]');if(i)i.dispatchEvent(new Event('input',{bubbles:true}))});
+document.addEventListener('input',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in]');if(!i||state.page!=='admin')return;const k=i.dataset.aaIn;if(k==='q')A.q=i.value;else if(k==='f')A.f=i.value;else if(k==='qq')A.qq=i.value;else if(k==='qf')A.qf=i.value;const pg=$('#app>main:not([hidden])');$$('[data-aa-in='+k+']',pg).forEach(x=>{if(x!==i)x.value=i.value});if(k==='qq'||k==='qf')admPaintQ(pg);else admPaintBody(pg)});
+document.addEventListener('change',e=>{const i=e.target.closest&&e.target.closest('[data-aa-in=f],[data-aa-in=qf]');if(i)i.dispatchEvent(new Event('input',{bubbles:true}))});
 document.addEventListener('click',e=>{const a=e.target.closest('[data-aa]');if(!a)return;const k=a.dataset.aa,pg=a.closest('main');
  if(k==='view'){e.preventDefault();const v=a.dataset.v;paintSignin(pg,v,new URLSearchParams(location.search).get('next')||'')}
  else if(k==='signout')doSignOut();
@@ -599,10 +652,72 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-aa]');if(!
  else if(k==='pq-add'||k==='pq-one'){const q=(D.q||[]).find(x=>String(x.id)===a.dataset.id);if(!q)return;const its=(q.payload&&q.payload.items)||[];toast(addMsg(addItems(k==='pq-one'?[its[+a.dataset.i]].filter(Boolean):its)))}
  else if(k==='adm-set')admSet(a.dataset.id,a.dataset.to,a);
  else if(k==='adm-reload'){A.rows=null;admLoad()}
+ else if(k==='adm-tab'){A.tab=a.dataset.tab==='quotes'?'quotes':'accounts';paintAdmin(pg)}
+ else if(k==='adm-qreload'){A.quotes=null;admQLoad()}
+ else if(k==='q-reply')qReply(a.dataset.id,a);
+ else if(k==='q-open'){A.qOpen=a.dataset.id;admPaintQ(pg,true);const el=$$('[data-adm-qpanel] .qp',pg).find(x=>x.offsetParent!==null);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
+ else if(k==='q-close'){A.qOpen='';admPaintQ(pg,true)}
+ else if(k==='q-copylink'||k==='q-copyemail'||k==='q-copyhtml'){const r=qRows().find(x=>x.id===a.dataset.id);if(!r||!r.tok){toast('No summary link for this quote');return}const d=qDraft(r);
+  const txt=k==='q-copylink'?d.link:k==='q-copyemail'?'Subject: '+d.subject+'\n\n'+d.body:qHtml(r);
+  copyText(txt).then(ok=>toast(ok?(k==='q-copylink'?'Summary link copied':k==='q-copyemail'?'Email copied':'HTML copied'):'Could not copy. Select the text manually.'))}
  else if(k==='adm-copy'){const em=[...new Set(admRows().map(r=>r.email).filter(Boolean))];if(!em.length){toast('No emails to copy');return}copyText(em.join(', ')).then(ok=>toast(ok?'Copied '+em.length+' email'+(em.length>1?'s':''):'Could not copy. Select the emails manually.'))}});
+
+// ---- quote summary: public page /shop/quote-summary/?t=TOKEN. Shown only after the team has replied (the database returns null before that).
+// It displays names and quantities only: no prices, no contact details, no internal ids.
+const QS={tm:[],tok:'',data:null};
+const qsNum=n=>{n=Number(n);return isFinite(n)?(Number.isInteger(n)?String(n):String(Math.round(n*10)/10)):''};
+const qsUnit=(u,n)=>{u=String(u||'Box').toLowerCase();if(!/^(piece|box|case)$/.test(u))u='box';return Number(n)===1?u:(u==='box'?'boxes':u+'s')};
+const qsQty=it=>{const n=it.quantity!=null?it.quantity:it.boxes;const q=Number(n);return isFinite(q)&&q>0?'x '+qsNum(q)+' '+qsUnit(it.unit,q):''};
+function qsItems(d){return ((d&&d.items)||[]).filter(i=>i&&typeof i==='object'&&String(i.display_name||i.product||'').trim())}
+function qsTotals(its){let b=0,ok=false;its.forEach(it=>{const q=Number(it.quantity!=null?it.quantity:it.boxes);let x=it.box_equivalent!=null?Number(it.box_equivalent):(String(it.unit||'Box').toLowerCase()==='box'?q:NaN);if(isFinite(x)&&x>0){b+=x;ok=true}});
+ const n=its.length,bx=Math.round(b*10)/10;return n+(n===1?' product':' products')+(ok?' - '+qsNum(bx)+(bx===1?' box':' boxes'):'')}
+const qsLogo='<img class="qs-logo qs-r" src="/assets/red-apple-logo.svg" alt="Red Apple Distribution" width="198" height="84">';
+function qsShell(inner,cls){return '<div class="qs '+(cls||'')+'" data-qs><div class="qs-glow" aria-hidden="true"></div><div class="qs-glow g2" aria-hidden="true"></div><div class="qs-stage">'+inner+'</div></div>'}
+function qsHTML(d){const its=qsItems(d),ref=String(d.ref||'').trim(),shop=String(d.shop||'').trim();
+ const subj=encodeURIComponent('Quote '+(ref||'summary')+' - reply to Red Apple Distribution');
+ return qsShell(qsLogo
+ +'<div class="qs-head"><p class="qs-eyebrow qs-r">Wholesale quote</p><h1 class="qs-h1 qs-r">Your quote is ready</h1>'+(shop?'<p class="qs-shop qs-r">'+esc(shop)+'</p>':'')+(ref?'<p class="qs-ref qs-r">Quote ref '+esc(ref)+'</p>':'')+'</div>'
+ +'<div class="qs-card qs-r">'+(its.length?'<ol class="qs-list" aria-label="Products in your quote" tabindex="0">'+its.map(it=>{const nm=String(it.display_name||it.product).trim(),fl=String(it.flavor||'').trim(),q=qsQty(it);
+   return '<li class="qs-i"><span class="qs-n"><b>'+esc(nm)+'</b>'+(fl?'<small>'+esc(fl)+'</small>':'')+'</span>'+(q?'<em class="qs-q">'+esc(q)+'</em>':'')+'</li>'}).join('')+'</ol>'
+   :'<p class="qs-empty">Your quote notes are with our team. Reply to us if you have any questions.</p>')
+ +'<p class="qs-total qs-r">'+esc(its.length?qsTotals(its):'Quote summary')+'</p></div>'
+ +'<div class="qs-close qs-r"><h2 class="qs-h2">Questions or ready to move forward?</h2><p>Our team has already sent your pricing by email. Reply to us and we will take it from there.</p>'
+ +'<div class="qs-btns"><a class="rq-btn" data-qs-reply href="mailto:sales@redappledistro.com?subject='+subj+'">Reply to our team</a><a class="rq-btn ghost" href="/shop/account/">Open my account / quotes</a></div>'
+ +'<p class="qs-tools"><button type="button" class="qs-link" data-qs-act="replay">Replay</button></p></div>'
+ +'<p class="qs-tools qs-skip"><button type="button" class="qs-link" data-qs-act="skip">Skip animation</button></p>')}
+const qsNA=()=>qsShell(qsLogo+'<div class="qs-na qs-r"><p class="rq-pill">Quote summary</p><h1 class="qs-h2">This quote summary is not available yet</h1><p>We share your summary once our team has replied to your quote request with pricing. Please check back soon, or reach out to us and we will help.</p><div class="qs-btns"><a class="rq-btn" href="mailto:sales@redappledistro.com?subject='+encodeURIComponent('My quote summary')+'">Email our team</a><a class="rq-btn ghost" href="/shop/account/">Open my account / quotes</a></div></div>','qs-state')
+const qsERR=()=>qsShell(qsLogo+'<div class="qs-na qs-r"><p class="rq-pill">Quote summary</p><h1 class="qs-h2">We could not load your summary</h1><p>Please check your connection and try again in a moment.</p><div class="qs-btns"><button type="button" class="rq-btn" data-qs-act="retry">Try again</button></div></div>','qs-state')
+const qsLOAD=()=>qsShell(qsLogo+'<p class="qs-wait qs-r">Loading your quote...</p>','qs-state');
+function qsRoots(){return $$('[data-qs-root]',$('#app>main:not([hidden])')||document)}
+function qsStop(){QS.tm.forEach(clearTimeout);QS.tm=[]}
+const qsAt=(ms,fn)=>{QS.tm.push(setTimeout(fn,ms))};
+const qsReduced=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}};
+function qsShowAll(r){const q=$('[data-qs]',r);if(!q)return;q.classList.add('is-on','is-done');$$('.qs-r,.qs-i',q).forEach(e=>e.classList.add('in'))}
+function qsPlay(r,static_){const q=$('[data-qs]',r);if(!q)return;
+ $$('.qs-r,.qs-i',q).forEach(e=>e.classList.remove('in'));q.classList.remove('is-done','is-on','is-static');const L=$('.qs-list',q);if(L)L.scrollTop=0;
+ if(static_||qsReduced()){q.classList.add('is-static');qsShowAll(r);return}
+ const on=(sel,ms)=>qsAt(ms,()=>{$$(sel,q).forEach(e=>e.classList.add('in'))});
+ let user=false;if(L){const stop=()=>{user=true};L.addEventListener('wheel',stop,{passive:true,once:true});L.addEventListener('touchstart',stop,{passive:true,once:true})}
+ qsAt(60,()=>q.classList.add('is-on'));on('.qs-logo',250);on('.qs-eyebrow',1100);on('.qs-h1',1300);on('.qs-shop',1900);on('.qs-ref',2250);
+ if(!$('.qs-i',q)){on('.qs-card',2500);on('.qs-close',3600);qsAt(3600,()=>q.classList.add('is-done'));return}
+ on('.qs-card',2500);const its=$$('.qs-i',q);let t=3100;
+ const fast=its.length>40?60:110;
+ its.forEach((li,i)=>{qsAt(t,()=>{li.classList.add('in');if(L&&!user){const y=li.offsetTop+li.offsetHeight-L.clientHeight+6;if(y>0)L.scrollTo({top:y,behavior:'smooth'})}});t+=i<7?430:fast});
+ on('.qs-total',t+500);on('.qs-close',t+1500);
+ qsAt(t+1500,()=>{q.classList.add('is-done');if(!user&&L)L.scrollTo({top:0,behavior:'smooth'});const c=$('.qs-close',q);if(c&&c.getBoundingClientRect().bottom>innerHeight)c.scrollIntoView({behavior:'smooth',block:'end'})})}
+function qsPaint(kind,d){qsStop();qsRoots().forEach(r=>{r.innerHTML=kind==='ok'?qsHTML(d):kind==='na'?qsNA():kind==='err'?qsERR():qsLOAD();if(kind==='ok')qsPlay(r);else{const q=$('[data-qs]',r);if(q){q.classList.add('is-on');qsAt(80,()=>{$$('.qs-r',q).forEach(e=>e.classList.add('in'))})}}})}
+async function qsLoad(){const tok=(new URLSearchParams(location.search).get('t')||'').trim();QS.tok=tok;qsPaint('load');
+ if(!AUTH_ON||!/^[A-Za-z0-9_-]{6,80}$/.test(tok)){qsPaint('na');return}
+ let d;try{d=await B.getSummary(tok)}catch(e){if(state.page==='qsum'&&QS.tok===tok)qsPaint(e&&e.status>=400&&e.status<500&&e.status!==429?'na':'err');return}
+ if(state.page!=='qsum'||QS.tok!==tok)return;
+ if(!d||typeof d!=='object'||!d.replied_at&&!d.items){qsPaint('na');return}
+ QS.data=d;qsPaint('ok',d)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-qs-act]');if(!b||state.page!=='qsum')return;const k=b.dataset.qsAct;
+ if(k==='retry')qsLoad();else if(k==='replay'){qsStop();window.scrollTo({top:0,behavior:'smooth'});qsRoots().forEach(r=>qsPlay(r))}else if(k==='skip'){qsStop();qsRoots().forEach(r=>qsPlay(r,true))}});
 
 // ---- route hook: returns true when it redirected (the caller stops)
 function authRoute(){const p=state.page;closeMenus();acctNav();if(p!=='signin')RECOV='';if(p!=='account')WELCOME=false;
+ if(p!=='qsum')qsStop();else{qsLoad();return false}
  if(!['signup','signin','account','admin'].includes(p)){quotePrompt($('#app>main:not([hidden])'));paintPast($('#app>main:not([hidden])'));return false}
  const pg=$('#app>main:not([hidden])'),nx=new URLSearchParams(location.search).get('next')||'';
  if(!AUTH_ON){soonState(pg);return false}

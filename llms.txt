@@ -1,0 +1,32 @@
+# Red Apple Distribution
+
+> Red Apple Distribution is a wholesale distributor for US licensed smoke shops and retailers. Wholesale only, sold to licensed retailers, 21+. The products are targeted at the United States only; we do not ship overseas.
+
+## What we sell
+Wholesale categories: vapes, flower, hydroxys, edibles, pre-rolls, kratom, shrooms and smoke accessories. Brands carried include Geek Bar, Lost Mary, RAZ, Fogger, Viva La Hemp, Muha Meds, Dozo and Mellow Fellow, among others listed on the brands page.
+
+## How ordering works
+- There is no online checkout and no card or bank details are taken on the website. Retailers build a list and request a quote; the sales team replies with terms.
+- Bulk quotes start at 10 boxes.
+- Shipping is by FedEx and UPS, within the United States.
+- If an order arrives damaged or duplicated, a credit is issued after the issue is verified with the shipping partner and the vendor.
+- Prices are given on request through a quote, not published on the site.
+
+## Contact
+- Email: sales@redappledistro.com
+- Contact page: https://redappledistribution.com/shop/contact/
+
+## Key pages
+- Home: https://redappledistribution.com/
+- Full catalog: https://redappledistribution.com/shop/c/all/
+- Brands: https://redappledistribution.com/shop/brands/
+- New arrivals: https://redappledistribution.com/shop/c/new/
+- Trending: https://redappledistribution.com/shop/c/trending/
+- FAQ: https://redappledistribution.com/shop/faq/
+- About: https://redappledistribution.com/shop/about/
+- Shipping and delivery policy: https://redappledistribution.com/shop/policy/
+- Returns: https://redappledistribution.com/shop/returns/
+- Terms: https://redappledistribution.com/shop/terms/
+- Privacy: https://redappledistribution.com/shop/privacy/
+- Reviews: https://redappledistribution.com/shop/reviews/
+- Sitemap (every product and brand page): https://redappledistribution.com/sitemap.xml

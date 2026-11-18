@@ -392,7 +392,11 @@
           ry = gsap.quickTo(el, 'rotationY', { duration: .8, ease: 'elastic.out(1,.7)' }),
           z = gsap.quickTo(el, 'z', { duration: .5, ease: 'power3.out' });
       el.addEventListener('pointermove', function (e) {
-        if (e.target.closest && e.target.closest('.tile__go')) { rx(0); ry(0); z(0); return; }
+        if (e.target.closest && e.target.closest('.tile__go')) {
+          if (!el._lock) { el._lock = 1; gsap.killTweensOf(el); gsap.to(el, { rotationX: 0, rotationY: 0, z: 0, duration: .3, ease: 'power2.out', overwrite: true }); }
+          return;
+        }
+        el._lock = 0;
         var r = el.getBoundingClientRect();
         var nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5;
         ry(nx * max * 2); rx(-ny * max * 2); z(lift);

@@ -7,6 +7,7 @@
 <title>Wholesale Smoke Shop Supplier | Red Apple Distribution</title>
 <meta name="description" content="Red Apple Distribution: nationwide wholesale for America's smoke shops. Disposable vapes, THC-P and THC-A, Hydroxys, pre-rolls and flower. Request wholesale pricing.">
 <link rel="icon" href="assets/red-apple-mark.svg">
+<meta name="theme-color" content="#790B13">
 <link rel="canonical" href="https://redappledistribution.com/">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Red Apple Distribution">
 <meta property="og:title" content="Wholesale Smoke Shop Supplier | Red Apple Distribution">
@@ -16,7 +17,7 @@
 <link rel="icon" href="favicon.ico" sizes="any"><link rel="icon" type="image/png" href="favicon.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="/consent.css?v=18d091d7"><script src="/shop/config.js"></script><script src="/consent.js?v=691d1fe1" defer></script>
 <style id="ra-acct-css">.nav__acct-btn[hidden]{display:none!important}.nav__links a{white-space:nowrap}.nav__logo{flex:none}@media(max-width:1500px) and (min-width:1101px){.nav__links{gap:14px}.nav__links a:not(.btn){font-size:12px;letter-spacing:.02em}.nav__acct-btn,.nav__links .btn{padding-left:12px;padding-right:12px}}</style><script id="ra-acct-js">try{var s=JSON.parse(localStorage.getItem("ra_auth")||"null");if(s&&s.user){document.addEventListener("DOMContentLoaded",function(){var a=document.querySelector("a[data-ra-acct]"),c=document.querySelector("a[data-ra-acct-cta]"),n=localStorage.getItem("ra_auth_name")||"";if(a){a.textContent="My account"+(n?" - "+n:"");a.href="/shop/account"}if(c)c.hidden=true})}}catch(e){}</script></head>
 <body>
@@ -35,8 +36,6 @@
   </div>
 </div>
 
-<div class="progress" id="progress" aria-hidden="true"></div>
-
 <header class="nav" id="nav">
   <div class="wrap nav__in">
     <a href="/" class="nav__logo"><img src="assets/red-apple-logo.svg" alt="Red Apple Distribution" width="123" height="52"></a>
@@ -44,10 +43,9 @@
       <a href="/shop/c/all">Shop catalog</a>
       <a href="#how">How it works</a>
       <a href="#brands">Brands</a>
-      <a href="#reviews">Reviews</a>
       <a href="#faq">FAQ</a>
       <a href="/shop/about">About</a>
-      <a href="/shop/account/signin" class="nav__acct" data-ra-acct>Sign in</a><a href="/shop/account/signup" class="nav__acct-btn btn btn--red btn--sm" data-ra-acct-cta>Create account</a><a href="#quote" class="btn btn--red btn--sm">Get a quote</a>
+      <a href="/shop/account/signin" class="nav__acct" data-ra-acct>Sign in</a><a href="/shop/account/signup" class="nav__acct-btn btn btn--line btn--sm" data-ra-acct-cta>Create account</a><a href="#quote" class="btn btn--red btn--sm">Get a quote</a>
     </nav>
     <button class="nav__burger" id="burger" aria-label="Menu" aria-expanded="false"><span></span><span></span></button>
   </div>
@@ -57,73 +55,55 @@
 
 <!-- Hero -->
 <section class="hero" id="hero">
-  <canvas class="hero__fx" id="fx" aria-hidden="true"></canvas>
-  <div class="hero__glow" aria-hidden="true"></div>
-  <div class="hero__grid" aria-hidden="true"></div>
+  <div class="hero__side" aria-hidden="true"><div class="rows" id="rows"></div></div>
   <div class="wrap hero__in">
     <div class="hero__copy">
-      <p class="badge" id="hero-badge"><i></i>Wholesale only - licensed retailers</p>
-      <h1 class="hero__h" aria-label="We keep America's smoke shops stocked.">
-        <span class="ln"><span>We keep</span></span>
-        <span class="ln"><span>America's</span></span>
-        <span class="ln ln--red"><span>Smoke shops</span></span>
-        <span class="ln"><span>Stocked.</span></span>
-      </h1>
-      <p class="hero__p">Disposable vapes, THC-P &amp; THC-A, Hydroxys, pre-rolls and flower - direct pricing, deep stock, shipped nationwide.</p>
-      <div class="hero__cta">
-        <a href="#quote" class="btn btn--red">Get a quote <svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <p class="eyebrow" data-enter>Wholesale for US smoke shops</p>
+      <h1 class="hero__h" data-enter>Everything<br>your shop <em>sells.</em></h1>
+      <p class="hero__p" data-enter>Vapes, THC-P, THC-A, hydroxys, pre-rolls and flower. Priced direct, shipped in 24-48 hours.</p>
+      <div class="hero__cta" data-enter>
+        <a href="#quote" class="btn btn--red">Get a quote</a>
         <a href="/shop/c/all" class="btn btn--line">Shop the catalog</a>
       </div>
     </div>
-    <div class="hero__stage" id="stage" aria-hidden="true">
-      <div class="disc"></div><div class="ring"></div>
-      <div class="pcard pcard--1" data-depth="18"><img src="assets/p/geek-bar-mate-60k.png" alt=""></div>
-      <div class="pcard pcard--3" data-depth="26"><img src="assets/p/geek-bar-burj-80k.png" alt=""></div>
-      <div class="pcard pcard--2" data-depth="36"><img src="assets/p/geek-bar-clr-50k.png" alt=""></div>
-      <span class="sticker sticker--a">80K<br>puffs</span>
-      <span class="sticker sticker--b">Deep<br>stock</span>
-    </div>
   </div>
-  <div class="hero__scroll" aria-hidden="true"><span></span>Scroll</div>
+  <div class="tick" aria-hidden="true"><div id="tk"></div></div>
 </section>
-
-<!-- Ribbon -->
-<div class="ribbon" aria-hidden="true">
-  <div class="ribbon__track" id="ribbon">
-    <span>Disposable Vapes</span><i></i><span class="o">THC-P &amp; THC-A</span><i></i><span>Hydroxys</span><i></i><span class="o">Pre-Rolls</span><i></i><span>Flower</span><i></i><span class="o">Shipped Nationwide</span><i></i>
-  </div>
-</div>
 
 <!-- Products -->
 <section class="line" id="products">
   <div class="wrap">
-    <h2 class="h2" data-lines><span class="ln"><span>The full line.</span></span><span class="ln ln--red"><span>Nothing missing.</span></span></h2>
-    <p class="lead" data-rise>Five core categories, restocked with what moves on your shelves right now. Every line is vetted, priced for margin, and ready to ship.</p>
-
+    <h2 class="h2" data-rise>The full line</h2>
+    <p class="lead" data-rise>Five core categories, restocked with what moves on your shelves.</p>
     <div class="bento" id="bento">
       <a class="tile tile--a" href="/shop/c/vapes" data-product="Disposable vapes">
         <img src="assets/home-cat-vapes.jpg" alt="Disposable vape device and packaging" loading="lazy">
-        <div class="tile__body"><span class="tile__n">01</span><h3>Disposable vapes</h3><p>High-turn disposables from the brands your customers ask for by name.</p><span class="tile__cta">Browse vapes <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        <div class="tile__body"><h3>Disposable vapes</h3><p>High-turn disposables from the brands your customers ask for by name.</p></div>
+        <span class="tile__go" aria-hidden="true"><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
       <a class="tile tile--b" href="/shop/c/edibles" data-product="THC-P &amp; THC-A">
         <img src="assets/home-cat-edibles.jpg" alt="Hemp-derived gummies" loading="lazy">
-        <div class="tile__body"><span class="tile__n">02</span><h3>THC-P &amp; THC-A</h3><p>Hemp-derived THC-P and THC-A products, lab-tested and compliant for licensed retail.</p><span class="tile__cta">Browse THC-P &amp; THC-A <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        <div class="tile__body"><h3>THC-P &amp; THC-A</h3><p>Hemp-derived and lab-tested, compliant for licensed retail.</p></div>
+        <span class="tile__go" aria-hidden="true"><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
       <a class="tile tile--c" href="/shop/c/hydroxys" data-product="Hydroxys">
         <img src="assets/home-cat-hydroxys.jpg" alt="Hydroxy tablets and packaging" loading="lazy">
-        <div class="tile__body"><span class="tile__n">03</span><h3>Hydroxys</h3><p>Heavy-hitting Hydroxy lines with the potency profiles your regulars chase.</p><span class="tile__cta">Browse hydroxys <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        <div class="tile__body"><h3>Hydroxys</h3><p>Heavy-hitting lines with the potency your regulars chase.</p></div>
+        <span class="tile__go" aria-hidden="true"><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
       <a class="tile tile--d" href="/shop/c/pre-rolls" data-product="Pre-Rolls">
         <img src="assets/home-cat-prerolls.jpg" alt="Infused pre-roll" loading="lazy">
-        <div class="tile__body"><span class="tile__n">04</span><h3>Pre-rolls</h3><p>Hand-rolled and machine-packed pre-rolls in strains that keep cases moving.</p><span class="tile__cta">Browse pre-rolls <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        <div class="tile__body"><h3>Pre-rolls</h3><p>Hand-rolled and machine-packed, in strains that keep cases moving.</p></div>
+        <span class="tile__go" aria-hidden="true"><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
       <a class="tile tile--e" href="/shop/c/flower" data-product="Flower">
         <img src="assets/home-cat-flower.jpg" alt="Cured flower bud" loading="lazy">
-        <div class="tile__body"><span class="tile__n">05</span><h3>Flower</h3><p>Cured flower with the bag appeal and nose that closes the sale in-store.</p><span class="tile__cta">Browse flower <svg class="arr" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        <div class="tile__body"><h3>Flower</h3><p>Cured flower with the bag appeal that closes the sale in-store.</p></div>
+        <span class="tile__go" aria-hidden="true"><svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
       <a class="tile tile--f" href="#quote">
-        <h3>Don't see it?<br><b>We source it.</b></h3>
-        <span class="tile__ask">Ask our team <svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <h3>Don't see it? <em>We source it.</em></h3>
+        <span class="tile__ask">Ask our team <svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
       </a>
     </div>
   </div>
@@ -132,87 +112,39 @@
 <!-- How it works -->
 <section class="how" id="how">
   <div class="wrap">
-    <p class="badge" data-rise><i></i>How it works</p>
-    <h2 class="h2" data-lines><span class="ln"><span>Quotes,</span></span><span class="ln ln--red"><span>made simple.</span></span></h2>
+    <h2 class="h2" data-rise>How it works</h2>
     <ol class="how__grid" id="steps">
-      <li class="step"><span class="step__bar" aria-hidden="true"></span><span class="step__n" aria-hidden="true">1</span><h3>Browse and add</h3><p>Pick the products and quantities you need.</p></li>
-      <li class="step"><span class="step__bar" aria-hidden="true"></span><span class="step__n" aria-hidden="true">2</span><h3>Request your quote</h3><p>Share your shop name, email and WhatsApp or phone number.</p></li>
-      <li class="step"><span class="step__bar" aria-hidden="true"></span><span class="step__n" aria-hidden="true">3</span><h3>We connect with you</h3><p>Our team contacts you with bulk pricing and next steps.</p></li>
+      <li class="step" data-rise><span class="step__n" aria-hidden="true">1</span><h3>Browse and add</h3><p>Pick the products and quantities you need.</p></li>
+      <li class="step" data-rise><span class="step__n" aria-hidden="true">2</span><h3>Request your quote</h3><p>Share your shop name, email and WhatsApp or phone number.</p></li>
+      <li class="step" data-rise><span class="step__n" aria-hidden="true">3</span><h3>We connect with you</h3><p>Our team contacts you with bulk pricing and next steps.</p></li>
     </ol>
-    <div class="how__cta" data-rise><a href="#quote" class="btn btn--red">Get a quote <svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a href="/shop/c/all" class="btn btn--line">Shop the catalog</a></div>
   </div>
 </section>
 
 <!-- Brands -->
 <section class="brands" id="brands">
   <div class="wrap">
-    <p class="badge" data-rise><i></i>Our brands</p>
-    <h2 class="h2" data-lines><span class="ln"><span>Brands</span></span><span class="ln ln--red"><span>we carry.</span></span></h2>
+    <h2 class="h2" data-rise>Brands we carry</h2>
     <div class="brands__grid" id="brand-grid">
-        <a class="btile" href="/shop/brand/Geek%20Bar"><span class="btile__n">01</span><span class="btile__t">Geek Bar</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/Viva%20La%20Hemp"><span class="btile__n">02</span><span class="btile__t">Viva La Hemp</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/RAZ"><span class="btile__n">03</span><span class="btile__t">RAZ</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/Lost%20Mary"><span class="btile__n">04</span><span class="btile__t">Lost Mary</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/Fogger"><span class="btile__n">05</span><span class="btile__t">Fogger</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/Psyched%20Blue"><span class="btile__n">06</span><span class="btile__t">Psyched Blue</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/7%20OHMZ"><span class="btile__n">07</span><span class="btile__t">7 OHMZ</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btile" href="/shop/brand/Mellow%20Fellow"><span class="btile__n">08</span><span class="btile__t">Mellow Fellow</span><svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        </div>
-    <p class="brands__more" data-rise><a href="/shop/brands" class="btn btn--line">View all brands</a></p>
-  </div>
-</section>
-
-<!-- Why -->
-<section class="vol" id="why">
-  <div class="wrap">
-    <h2 class="h3" data-lines><span class="ln"><span>Built for volume</span></span></h2>
-    <div class="vol__grid" id="stats">
-      <div class="stat">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5h13v11H1zM14 9h5l4 4v3h-9z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
-        <p class="stat__n"><span data-count="50">50</span></p><p class="stat__l">States shipped</p>
-      </div>
-      <div class="stat">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
-        <p class="stat__n"><span data-count="5">5</span>+</p><p class="stat__l">Core product lines</p>
-      </div>
-      <div class="stat">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
-        <p class="stat__n"><span data-count="24">24</span>-<span data-count="48">48</span>H</p><p class="stat__l">Fulfillment turnaround</p>
-      </div>
-      <div class="stat">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 010 8M22 21c0-3-1.500-5-4-5.700"/></svg>
-        <p class="stat__n"><span data-count="1">1</span>:<span data-count="1">1</span></p><p class="stat__l">One rep per account</p>
-      </div>
+        <a class="btile" href="/shop/brand/Geek%20Bar">Geek Bar</a>
+        <a class="btile" href="/shop/brand/Viva%20La%20Hemp">Viva La Hemp</a>
+        <a class="btile" href="/shop/brand/RAZ">RAZ</a>
+        <a class="btile" href="/shop/brand/Lost%20Mary">Lost Mary</a>
+        <a class="btile" href="/shop/brand/Fogger">Fogger</a>
+        <a class="btile" href="/shop/brand/Psyched%20Blue">Psyched Blue</a>
+        <a class="btile" href="/shop/brand/7%20OHMZ">7 OHMZ</a>
+        <a class="btile" href="/shop/brand/Mellow%20Fellow">Mellow Fellow</a>
     </div>
+    <p class="brands__more" data-rise><a href="/shop/brands" class="btn btn--ink">View all brands</a></p>
   </div>
 </section>
 
-<!-- Reviews -->
-<section class="rev" id="reviews">
+<!-- Reviews: shown only when approved reviews exist -->
+<section class="rev" id="reviews" hidden>
   <div class="wrap">
-    <p class="badge" data-rise><i></i>Reviews</p>
-    <h2 class="h2" data-lines><span class="ln"><span>What shop owners</span></span><span class="ln ln--red"><span>say.</span></span></h2>
+    <h2 class="h2" data-rise>What shop owners say</h2>
     <div class="rev__list" id="rev-list" aria-live="polite"></div>
-    <div class="rev__cta" data-rise><a href="/shop/review" class="btn btn--red">Write a review</a><a href="/shop/reviews" class="btn btn--line">See all reviews</a></div>
-  </div>
-</section>
-
-<!-- About -->
-<section class="about" id="about">
-  <div class="wrap about__in">
-    <div class="about__copy">
-      <p class="badge" data-rise><i></i>About us</p>
-      <h2 class="h2" data-lines><span class="ln"><span>Who we</span></span><span class="ln ln--red"><span>are.</span></span></h2>
-      <p class="lead" data-rise>Red Apple Distribution is a wholesale supplier for smoke shops, vape shops, convenience stores and other retailers across the United States.</p>
-      <p class="lead" data-rise>We built Red Apple Distribution around one idea: buying wholesale should be simple. Browse the catalog, build your list, and request a quote. Our team follows up personally with bulk pricing for your shop.</p>
-      <a href="/shop/about" class="btn btn--line" data-rise>Read more about us</a>
-    </div>
-    <div class="about__facts" id="facts">
-      <div class="fact"><p class="fact__n">21+</p><p class="fact__l">Adults only</p></div>
-      <div class="fact"><p class="fact__n">10</p><p class="fact__l">Boxes for bulk quotes</p></div>
-      <div class="fact"><p class="fact__n">2</p><p class="fact__l">Carriers: FedEx and UPS</p></div>
-      <div class="fact"><p class="fact__n fact__n--s">Bulk</p><p class="fact__l">Pricing on request</p></div>
-    </div>
+    <div class="rev__cta" data-rise><a href="/shop/reviews" class="btn btn--line">See all reviews</a></div>
   </div>
 </section>
 
@@ -220,10 +152,9 @@
 <section class="faq" id="faq">
   <div class="wrap faq__in">
     <div class="faq__copy">
-      <p class="badge" data-rise><i></i>FAQ</p>
-      <h2 class="h2 h2--sm" data-lines><span class="ln"><span>Frequently asked</span></span><span class="ln ln--red"><span>questions</span></span></h2>
-      <p class="lead" data-rise>Short answers about quotes, shipping and credit. Need more? Talk to our team.</p>
-      <p data-rise><a href="/shop/contact" class="btn btn--line">More questions? Contact us</a></p>
+      <h2 class="h2" data-rise>Questions, answered</h2>
+      <p class="lead" data-rise>Short answers about quotes, shipping and credit.</p>
+      <p data-rise><a href="/shop/contact" class="btn btn--line">Contact us</a></p>
     </div>
     <div class="faq__list" id="faq-list">
         <div class="faq__item is-open" data-faq>
@@ -246,31 +177,7 @@
           <h3><button class="faq__q" type="button" id="faq-q5" aria-expanded="false" aria-controls="faq-a5"><span>What is the minimum order?</span><i class="faq__ic" aria-hidden="true"></i></button></h3>
           <div class="faq__a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div><p>Bulk quotes start at 10 boxes, as we are a wholesaler. Under 10 boxes? Send the request anyway and our team will tell you what is possible.</p></div></div>
         </div>
-    </div>
-  </div>
-</section>
-
-<!-- Stock up -->
-<section class="stock" id="stock">
-  <div class="wrap stock__in">
-    <div class="stock__copy">
-      <h2 class="h2" data-lines><span class="ln"><span>Ready to stock up?</span></span><span class="ln ln--red"><span>Stock up.</span></span></h2>
-      <p class="lead" data-rise>Tell us what your shop needs and the volumes you move. Our team gets back with wholesale pricing fast - no runaround, no middlemen.</p>
-      <a href="#quote" class="btn btn--red" data-rise>Get a quote <svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <p class="fine" data-rise>Wholesale only - licensed retailers</p>
-    </div>
-    <div class="frame" id="frame">
-      <span class="frame__line" aria-hidden="true"></span>
-      <div class="frame__pic">
-        <div class="mosaic">
-          <img src="assets/p/viva-la-hemp-fat-daddy.png" alt="Viva La Hemp pre-rolls" loading="lazy">
-          <img src="assets/p/muha-meds-live-resin.png" alt="Muha Meds disposables" loading="lazy">
-          <img src="assets/p/dozo-d9-smasher.png" alt="DOZO gummies" loading="lazy">
-          <img src="assets/p/fvkd-hash-holez.png" alt="FVKD pre-rolls" loading="lazy">
-        </div>
-      </div>
-      <span class="frame__word" id="frame-word" aria-hidden="true">Get priced</span>
-    </div>
+    
   </div>
 </section>
 
@@ -278,15 +185,13 @@
 <section class="quote" id="quote">
   <div class="wrap quote__in">
     <div class="quote__copy">
-      <p class="badge" data-rise><i></i>Get priced</p>
-      <h2 class="h2 h2--sm" data-lines><span class="ln"><span>Request wholesale</span></span><span class="ln"><span>pricing</span></span></h2>
-      <p class="lead" data-rise>Tell us about your shop and what you need. A rep gets back to you with pricing and availability - usually the same day.</p>
+      <h2 class="h2" data-rise>Request wholesale pricing</h2>
+      <p class="lead" data-rise>Tell us about your shop and what you need. A rep replies with pricing and availability, usually the same day.</p>
       <ul class="quote__list" data-rise>
         <li><a href="mailto:sales@redappledistro.com">sales@redappledistro.com</a></li>
         <li><a href="tel:+13479379103">(347) 937-9103</a></li>
       </ul>
     </div>
-
     <form class="form" id="form" novalidate>
       <div class="form__row">
         <label class="f"><span>Business name</span><input name="business" type="text" placeholder="Your shop name" required autocomplete="organization"></label>
@@ -332,16 +237,14 @@
   <div class="wrap foot__top">
     <div class="foot__brand">
       <a href="/" class="nav__logo"><img src="assets/red-apple-logo.svg" alt="Red Apple Distribution" width="170" height="72"></a>
-      <p>Nationwide wholesale for America's smoke shops. Direct pricing, deep stock, and reps who know what moves on your shelves.</p>
-      <span class="badge badge--sm">Nationwide USA</span>
+      <p>Wholesale supply for smoke shops, vape shops and convenience stores across the United States.</p>
     </div>
-    <div class="foot__col"><b>Catalog</b><a href="/shop/c/vapes">Disposable Vapes</a><a href="/shop/c/edibles">THC-P &amp; THC-A</a><a href="/shop/c/hydroxys">Hydroxys</a><a href="/shop/c/pre-rolls">Pre-Rolls</a><a href="/shop/c/flower">Flower</a><a href="/shop/c/all">The Catalog</a><a href="/shop/quote">Request a Quote</a></div>
-    <div class="foot__col"><b>Company</b><a href="/shop/about">About us</a><a href="/shop/faq">FAQ</a><a href="/shop/reviews">Reviews</a><a href="/shop/contact">Contact</a><a href="/shop/policy">Shipping and delivery</a><a href="/shop/terms">Terms</a><a href="/shop/privacy">Privacy</a><a href="/shop/returns">Returns</a><a href="/shop/privacy" data-ra-cookie-settings>Cookie settings</a></div>
+    <div class="foot__col"><b>Catalog</b><a href="/shop/c/vapes">Disposable vapes</a><a href="/shop/c/edibles">THC-P &amp; THC-A</a><a href="/shop/c/hydroxys">Hydroxys</a><a href="/shop/c/pre-rolls">Pre-rolls</a><a href="/shop/c/flower">Flower</a></div>
+    <div class="foot__col"><b>Company</b><a href="/shop/about">About us</a><a href="/shop/faq">FAQ</a><a href="/shop/contact">Contact</a><a href="/shop/policy">Shipping and delivery</a><a href="/shop/returns">Returns</a><a href="/shop/terms">Terms</a><a href="/shop/privacy">Privacy</a><a href="/shop/privacy" data-ra-cookie-settings>Cookie settings</a></div>
   </div>
-  <div class="foot__word" id="foot-word" aria-hidden="true">Red Apple</div>
   <div class="wrap foot__base">
-    <p>© 2026 Red Apple Distribution. All rights reserved.</p>
-    <p>Wholesale only - sold to licensed retailers. 21+.</p>
+    <p>&copy; 2026 Red Apple Distribution</p>
+    <p>Wholesale only. Sold to licensed retailers, 21+.</p>
   </div>
 </footer>
 

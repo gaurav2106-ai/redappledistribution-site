@@ -465,3 +465,10 @@ a.relative.shrink-0[href="/shop/account/signin"]:not([data-ra-acct]){display:non
 [style*="background:#FFF0DC"],[style*="background:#FFF0DC"] *,[style*="background-color:#FFF0DC"],[style*="background-color:#FFF0DC"] *{color:#790B13!important}
 .bg-\[var\(--color\\\/red\2c \#ff2b2b\)\],.bg-\[var\(--color\\\/red\2c \#ff2b2b\)\] *{color:#790B13!important}
 input.nav-search{background:transparent!important;background-color:transparent!important}
+
+/* polish: anchor buttons keep their label color, calmer empty states */
+a.rq-btn,a.rq-btn:visited{color:#790B13}
+a.rq-btn.ghost,a.rq-btn.ghost:visited{color:#FFF0DC}
+.rv-empty{flex-direction:column;gap:10px;text-align:center;border:1px solid rgba(255,240,220,.16);border-radius:22px;background:rgba(78,7,12,.55)}
+.rv-empty__t{font:500 30px 'Barlow Condensed','Arial Narrow',sans-serif;letter-spacing:.02em;color:#FFF0DC;margin:0;text-transform:uppercase}
+.rv-empty__s{max-width:46ch;color:rgba(255,240,220,.78);margin:0 0 8px;line-height:1.5}

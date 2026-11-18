@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pre-render the shop: one small static HTML per route.
 
-Usage:  python3 tools/build_shop.py [shop_dir]      (default: shop-next)
+Usage:  python3 tools/build_shop.py [shop_dir]      (default: shop)
 
 Reads  <shop_dir>/data.js  (PRODUCTS, PICKS, ALIASES)  and writes
   <shop_dir>/<route>/index.html   for catalog, product, brand and info routes.
@@ -14,7 +14,7 @@ from urllib.parse import quote, unquote
 from html import escape as _esc
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SHOP = os.path.join(ROOT, sys.argv[1] if len(sys.argv) > 1 else 'shop-next')
+SHOP = os.path.join(ROOT, sys.argv[1] if len(sys.argv) > 1 else 'shop')
 SITE = 'https://redappledistribution.com'
 HB = 'Check brand'
 BUDGET = 15000  # bytes of product cards per page, keeps every file under 30 KB

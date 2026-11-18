@@ -171,10 +171,10 @@
   });
 
   var tiles = $$('.tile');
-  gsap.set(tiles, { opacity: 0, y: 28 });
+  gsap.set(tiles, { opacity: 0, y: 40, rotationX: 16, transformPerspective: 1000, transformOrigin: '50% 100%' });
   ScrollTrigger.batch(tiles, {
     start: 'top 92%', once: true,
-    onEnter: function (b) { gsap.to(b, { opacity: 1, y: 0, duration: .9, stagger: .12, ease: 'power3.out', clearProps: 'transform' }); }
+    onEnter: function (b) { gsap.to(b, { opacity: 1, y: 0, rotationX: 0, duration: 1.1, stagger: .12, ease: 'power3.out' }); }
   });
 
 
@@ -337,10 +337,10 @@
   });
 
   var tiles = $$('.tile');
-  gsap.set(tiles, { opacity: 0, y: 28 });
+  gsap.set(tiles, { opacity: 0, y: 40, rotationX: 16, transformPerspective: 1000, transformOrigin: '50% 100%' });
   ScrollTrigger.batch(tiles, {
     start: 'top 92%', once: true,
-    onEnter: function (b) { gsap.to(b, { opacity: 1, y: 0, duration: .9, stagger: .12, ease: 'power3.out', clearProps: 'transform' }); }
+    onEnter: function (b) { gsap.to(b, { opacity: 1, y: 0, rotationX: 0, duration: 1.1, stagger: .12, ease: 'power3.out' }); }
   });
 
 
@@ -379,6 +379,33 @@
       move(((e.clientX - r.left) / r.width - .5) * 2, ((e.clientY - r.top) / r.height - .5) * 2);
     });
     hero.addEventListener('pointerleave', function () { move(0, 0); });
+  })();
+
+
+  /* 3D depth: springy pointer tilt on the hero panel and tiles (fine pointers, motion allowed). */
+  (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    function tilt(el, max, lift) {
+      gsap.set(el, { transformPerspective: 900 });
+      var rx = gsap.quickTo(el, 'rotationX', { duration: .8, ease: 'elastic.out(1,.7)' }),
+          ry = gsap.quickTo(el, 'rotationY', { duration: .8, ease: 'elastic.out(1,.7)' }),
+          z = gsap.quickTo(el, 'z', { duration: .5, ease: 'power3.out' });
+      el.addEventListener('pointermove', function (e) {
+        var r = el.getBoundingClientRect();
+        var nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5;
+        ry(nx * max * 2); rx(-ny * max * 2); z(lift);
+      });
+      el.addEventListener('pointerleave', function () { rx(0); ry(0); z(0); });
+    }
+    $$('.tile').forEach(function (t) { tilt(t, 5, 18); });
+    var hs = $('.hero__side');
+    if (hs) {
+      var hero = $('.hero');
+      gsap.set(hs, { transformPerspective: 1400 });
+      var hrx = gsap.quickTo(hs, 'rotationX', { duration: 1.2, ease: 'power3.out' }), hry = gsap.quickTo(hs, 'rotationY', { duration: 1.2, ease: 'power3.out' });
+      hero.addEventListener('pointermove', function (e) { hry((e.clientX / innerWidth - .5) * -6); hrx((e.clientY / innerHeight - .5) * 4); });
+    }
   })();
 
   window.addEventListener('load', function () { ScrollTrigger.refresh(); });

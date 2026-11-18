@@ -755,3 +755,20 @@ fixUrl();route();
 /* one account link in the header: hide the duplicate "Sign in" in the nav row when the account group shows its own */
 (function(){function dedupe(){var all=[].slice.call(document.querySelectorAll('a[data-ra-acct]')).filter(function(a){return a.getBoundingClientRect().top<220;});var keep=all.filter(function(a){return a.classList.contains('ra-acct-link');});if(!keep.length)return;all.forEach(function(a){if(keep.indexOf(a)<0&&a.offsetParent!==null&&!a.closest('footer'))a.style.display='none';});}
 ['load','resize'].forEach(function(e){window.addEventListener(e,function(){setTimeout(dedupe,60);});});setInterval(dedupe,1500);})();
+
+/* Apple-style 3D tilt on product cards (fine pointers, motion allowed). Transform only. */
+(function(){
+  try{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+    var cur=null,raf=0,ev=null;
+    function apply(){raf=0;if(!cur||!ev)return;var r=cur.getBoundingClientRect(),nx=(ev.clientX-r.left)/r.width-.5,ny=(ev.clientY-r.top)/r.height-.5;
+      cur.style.transform='perspective(900px) rotateX('+(-ny*9).toFixed(2)+'deg) rotateY('+(nx*11).toFixed(2)+'deg) translateZ(14px)';
+      var im=cur.querySelector('[data-f="img"] img');if(im)im.style.transform='translateZ(40px) translate('+(nx*8).toFixed(1)+'px,'+(ny*6).toFixed(1)+'px)';}
+    function reset(c){if(!c)return;c.style.transition='transform .7s cubic-bezier(.23,1,.32,1)';c.style.transform='';var im=c.querySelector('[data-f="img"] img');if(im){im.style.transition='transform .7s cubic-bezier(.23,1,.32,1)';im.style.transform='';}}
+    document.addEventListener('pointermove',function(e){
+      var c=e.target.closest&&e.target.closest('[data-f="link"]');
+      if(c!==cur){reset(cur);cur=c;if(c){c.style.transition='transform .12s ease-out';c.style.transformStyle='preserve-3d';var d=c.querySelector('[data-f="img"]');if(d)d.style.transformStyle='preserve-3d';}}
+      if(!c)return;ev=e;if(!raf)raf=requestAnimationFrame(apply);},{passive:true});
+    document.addEventListener('pointerleave',function(){reset(cur);cur=null;});
+  }catch(e){}
+})();

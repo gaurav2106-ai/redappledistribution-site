@@ -362,3 +362,14 @@ h1,h2,h3,p{margin:0}
 /* arrow pick-up */
 .tile__go{z-index:4}
 .tile .pickfly{position:absolute;inset:auto;max-width:none;object-fit:contain;z-index:5;pointer-events:none;transition:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+
+/* logo without plate; age gate on dark so the logo reads */
+.nav__logo{background:none;box-shadow:none;padding:0;border-radius:0}
+.nav__logo img{filter:drop-shadow(0 3px 8px rgba(0,0,0,.35))}
+.age__card{background:var(--burgundy-deep);color:var(--on-b);box-shadow:0 30px 80px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,240,220,.14)}
+.age__txt{color:var(--on-b-mute)}
+.age__card .btn--red{background:var(--ivory);color:var(--burgundy)}
+.age__card .btn--line{border-color:var(--ivory);color:var(--ivory)}
+.age__card .btn--line:hover{background:var(--ivory);color:var(--burgundy)}
+.age__deny{color:var(--ivory)}
+@media (max-width:860px){.nav__logo{padding:0}}

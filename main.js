@@ -409,35 +409,12 @@
   })();
 
 
-  /* Cinematic hero + pinned 3D brand story. Transform and opacity only. */
+  /* Brands we carry: pinned 3D brand story. Transform and opacity only. */
   (function () {
     var rm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    var stage = $('.hero__stage'), m = $('.hs--m'), l = $('.hs--l'), r = $('.hs--r');
-    if (stage && m) {
-      gsap.set(m, { xPercent: -50, yPercent: -48, x: 0, y: 0, transformPerspective: 1100 });
-      gsap.set(l, { xPercent: -135, yPercent: -20, rotation: -12, transformPerspective: 1100 });
-      gsap.set(r, { xPercent: 45, yPercent: 30, rotation: 10, transformPerspective: 1100 });
-      if (innerWidth <= 860) { gsap.set(m, { yPercent: -66 }); gsap.set(l, { xPercent: -150, yPercent: -40 }); gsap.set(r, { xPercent: 40, yPercent: 40 }); }
-      if (!rm) {
-        gsap.from(m, { y: 90, opacity: 0, rotationY: -35, duration: 1.4, ease: 'power3.out', delay: .15 });
-        gsap.from([l, r], { opacity: 0, scale: .8, duration: 1.4, ease: 'power3.out', delay: .4 });
-        gsap.to(stage, { scale: 1.22, y: -60, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: .6 } });
-        gsap.to('.hero__big', { y: -90, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: .6 } });
-        if (fine) {
-          var q = [[m, 1, 16], [l, .5, 8], [r, 1.6, 22]].map(function (a) {
-            return { d: a[1], rot: a[2], x: gsap.quickTo(a[0], 'x', { duration: .9, ease: 'power3.out' }), y: gsap.quickTo(a[0], 'y', { duration: .9, ease: 'power3.out' }), ry: gsap.quickTo(a[0], 'rotationY', { duration: 1.1, ease: 'power3.out' }), rx: gsap.quickTo(a[0], 'rotationX', { duration: 1.1, ease: 'power3.out' }) };
-          });
-          $('#hero').addEventListener('pointermove', function (e) {
-            var nx = e.clientX / innerWidth - .5, ny = e.clientY / innerHeight - .5;
-            q.forEach(function (o) { o.x(nx * 50 * o.d); o.y(ny * 30 * o.d); o.ry(nx * o.rot * 2); o.rx(-ny * o.rot); });
-          });
-        }
-      }
-    }
     var st = $('#story'); if (!st) return;
     var words = $$('.story__words span'), imgs = $$('.story__items img'), txt = $$('.story__txt > div'), n = words.length, sn = $('#sn'), bg = $('.story__bg');
-    var hues = ['#8C1520', '#6E2A5E', '#7A3A10', '#7A1F2B', '#8C1520'];
+    var hues = ['#5E1A2C', '#8C1520', '#6E2A5E', '#7A3A10', '#7A1F2B', '#8C1520'];
     function clamp(v) { return Math.max(0, Math.min(1, v)); }
     var last = -1;
     function upd(p) {

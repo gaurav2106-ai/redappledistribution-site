@@ -404,20 +404,31 @@
       el.addEventListener('pointerleave', function () { rx(0); ry(0); z(0); });
     }
     $$('.tile').forEach(function (t) { tilt(t, 5, 18); });
-    /* Arrow pick-up: hover the arrow on a ring tile, the front product flies to it and the arrow becomes that product. */
-    $$('.tile--a, .tile--c').forEach(function (tile) {
-      var go = $('.tile__go', tile), arr = $('.arr', go), imgs = $$('.ring img', tile), pick = null, src = null;
-      if (!go || !imgs.length) return;
+    /* Arrow pick-up: hover the arrow on a category tile, its product flies to the arrow and the arrow becomes that product. */
+    var BB = { edibles: [.389, .246, .538, .557], prerolls: [.163, .360, .597, .416], flower: [.568, .232, .227, .556] };
+    $$('.tile').forEach(function (tile) {
+      var go = $('.tile__go', tile), arr = go && $('.arr', go), ring = $$('.ring img', tile), pop = $('.pop', tile), pick = null, hide = null, landing = null;
+      if (!go || !(ring.length || pop)) return;
       function rel(r) { var t = tile.getBoundingClientRect(); return { x: r.left - t.left, y: r.top - t.top, w: r.width, h: r.height }; }
+      function source() {
+        if (ring.length) {
+          var el = ring.reduce(function (a, b) { return b.getBoundingClientRect().width > a.getBoundingClientRect().width ? b : a; });
+          return { src: el.src, hide: el, rect: rel(el.getBoundingClientRect()) };
+        }
+        var key = pop.src.match(/pop-(\w+)\.webp/)[1], f = BB[key], t = tile.getBoundingClientRect();
+        var nw = pop.naturalWidth || 915, nh = pop.naturalHeight || 630, sc = Math.max(t.width / nw, t.height / nh);
+        var ox = (t.width - nw * sc) / 2, oy = (t.height - nh * sc) / 2;
+        return { src: pop.src.replace('pop-', 'pick-'), hide: pop, rect: { x: ox + f[0] * nw * sc, y: oy + f[1] * nh * sc, w: f[2] * nw * sc, h: f[3] * nh * sc } };
+      }
       go.addEventListener('pointerenter', function () {
-        if (pick) { gsap.killTweensOf(pick); pick.remove(); if (src) gsap.set(src, { opacity: 1 }); }
-        src = imgs.reduce(function (a, b) { return b.getBoundingClientRect().width > a.getBoundingClientRect().width ? b : a; });
-        var from = rel(src.getBoundingClientRect()), to = rel(go.getBoundingClientRect());
-        pick = document.createElement('img'); pick.src = src.src; pick.alt = ''; pick.className = 'pickfly';
+        if (pick) { gsap.killTweensOf(pick); pick.remove(); if (hide) gsap.set(hide, { opacity: 1 }); }
+        var s = source(); hide = s.hide; landing = s.rect;
+        var from = s.rect, to = rel(go.getBoundingClientRect());
+        pick = document.createElement('img'); pick.src = s.src; pick.alt = ''; pick.className = 'pickfly';
         pick.style.cssText = 'left:' + from.x + 'px;top:' + from.y + 'px;width:' + from.w + 'px;height:' + from.h + 'px;';
         tile.appendChild(pick);
-        gsap.set(src, { opacity: 0 });
-        var h = 34, w = from.w / from.h * h;
+        gsap.set(hide, { opacity: 0 });
+        var box = 34, k = Math.min(box / from.w, box / from.h), w = from.w * k, h = from.h * k;
         gsap.killTweensOf([go, arr]);
         gsap.to(arr, { scale: 0, rotate: -90, opacity: 0, duration: .25, ease: 'power3.in' });
         gsap.to(go, { scale: 1.3, duration: .5, ease: 'back.out(1.6)' });
@@ -425,12 +436,12 @@
       });
       go.addEventListener('pointerleave', function () {
         if (!pick) return;
-        var p = pick, s2 = src; pick = null;
-        var to = rel(s2.getBoundingClientRect());
+        var p = pick, hd = hide; pick = null;
+        var to = ring.length ? rel(hd.getBoundingClientRect()) : source().rect;
         gsap.to(go, { scale: 1, duration: .4, ease: 'power3.out' });
         gsap.to(arr, { scale: 1, rotate: 0, opacity: 1, duration: .35, delay: .2, ease: 'power3.out' });
         gsap.to(p, { left: to.x, top: to.y, width: to.w, height: to.h, rotate: 720, duration: .6, ease: 'power3.inOut',
-          onComplete: function () { p.remove(); gsap.set(s2, { opacity: 1 }); } });
+          onComplete: function () { p.remove(); gsap.set(hd, { opacity: 1 }); } });
       });
     });
     var hs = $('.hero__side');

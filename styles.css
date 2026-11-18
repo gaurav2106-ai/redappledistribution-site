@@ -330,3 +330,13 @@ h1,h2,h3,p{margin:0}
 @media (max-width:860px){.ring{--R:clamp(70px,21vw,120px);height:50%}.tile--a .ring{height:54%}}
 @media (prefers-reduced-motion:reduce){.ring{animation:none}.drift{animation:none;transform:none}.fx{display:none}}
 @media (max-width:860px){.tile--c .ring{height:30%;top:8%}.tile{min-height:280px}}
+
+/* solo product turntable (edibles, pre-rolls, flower) */
+.scene--solo{perspective:1000px}
+.tile .solo{position:absolute;inset:auto;left:50%;top:10%;height:44%;width:auto;max-width:78%;object-fit:contain;z-index:auto;transition:none;transform-origin:50% 60%;filter:drop-shadow(0 22px 24px rgba(0,0,0,.5));animation:ra-turn 9s ease-in-out infinite alternate;will-change:transform}
+.tile .solo--prerolls{height:auto;width:62%;top:18%}
+.tile .solo--flower{height:46%}
+@keyframes ra-turn{from{transform:translateX(-50%) translateY(6px) rotateY(-24deg) rotateZ(-2deg)}to{transform:translateX(-50%) translateY(-8px) rotateY(24deg) rotateZ(2deg)}}
+.tile:hover .solo{animation-duration:5s;transform:none}
+@media (prefers-reduced-motion:reduce){.solo{animation:none;transform:translateX(-50%)}}
+.tile--b .solo{height:58%;top:6%}.tile--e .solo{height:62%;top:5%}

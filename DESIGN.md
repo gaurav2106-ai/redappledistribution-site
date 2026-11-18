@@ -36,3 +36,10 @@ Accent italic word on burgundy: #E9CFAF. Ivory on burgundy contrast is about 9.9
 
 ## Imagery
 - Products: transparent cutouts only, 10 distinct per row, no repeats on screen. Categories photography for tiles.
+
+## Shop (rebuilt, replaces the Figma Make export)
+- One responsive layout, no duplicated desktop and phone copies. Pages are pre-rendered by `python3 tools/build_shop.py` (writes `shop/<route>/index.html`, 471 routes, each under 30 KB, with title, description, self canonical, one h1, product links and JSON-LD; Product has no price). `shop/app.js` enhances them; `shop/app.css` carries the styles. Edit the script or app files, then rebuild. Product photos: `python3 tools/optimize_images.py <src> <dst>` (WebP, under 80 KB).
+- Same header, footer, age gate and cookie bar as the landing page (`/consent.js`, `/consent.css`). Section tone tokens (`--tx --hl --mute --ln`) flip between burgundy and ivory so every component works on both.
+- Page head: diagonal deep-burgundy panel with large product cutouts that follow the pointer (same idea as the hero). Product grid is a hairline ledger, not a wall of cards: cutout, brand, condensed name, add bar; cards reveal in a staggered batch and tilt with the pointer. Category panels on the catalog page use the arrow pick-up. Brands with no photo use `/assets/red-apple-mark.svg`, never letters.
+- Motion: transform, opacity and the individual `translate` and `rotate` properties only, ease-out, gated by reduced motion and `(hover:hover) and (pointer:fine)`.
+- Honesty rules kept: no prices (config `showPrices`), empty reviews stay empty, forms count as sent only when the endpoint returns `success`, `_honey` field plus a client throttle on contact, newsletter and review.

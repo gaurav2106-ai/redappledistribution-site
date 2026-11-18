@@ -6,9 +6,9 @@
   --burgundy-2:#8C1520;    /* derived: hover and raised surface on burgundy */
   --ivory-2:#F6E3C6;       /* derived: cards on ivory */
   --on-b:#FFF0DC;
-  --on-b-mute:rgba(255,240,220,.78);
+  --on-b-mute:rgba(255,240,220,.84);
   --on-i:#4E070C;
-  --on-i-mute:rgba(78,7,12,.78);
+  --on-i-mute:rgba(78,7,12,.84);
   --line-b:rgba(255,240,220,.22);
   --line-i:rgba(121,11,19,.22);
   --pad:clamp(20px,6vw,96px);
@@ -363,3 +363,18 @@ h1,h2,h3,p{margin:0}
 .age__card .btn--line:hover{background:var(--ivory);color:var(--burgundy)}
 .age__deny{color:var(--ivory)}
 @media (max-width:860px){.nav__logo{padding:0}}
+
+/* ===== audit pass: 44px tap targets, hidden honeypot, one body font ===== */
+.f--hp{position:absolute;left:-9999px;opacity:0;height:0;width:0;pointer-events:none}
+.btn--sm{height:44px}
+.chip span{min-height:44px}
+.nav__logo{min-height:44px}
+.nav__links a:not(.btn){min-height:44px;display:inline-flex;align-items:center;min-width:44px}
+.foot__col{gap:0}
+.foot__col b{margin-bottom:6px}
+.foot__col a{min-height:44px;min-width:44px;display:inline-flex;align-items:center}
+.story__txt a{display:inline-flex;align-items:center;min-height:44px;padding-bottom:0}
+.quote__list a{display:inline-block;min-height:44px;line-height:44px;background-position:left calc(50% + 12px)}
+.btile{min-height:72px;display:flex;align-items:center}
+.brands__grid .btile{padding-right:12px}
+.nav__burger{min-width:44px}

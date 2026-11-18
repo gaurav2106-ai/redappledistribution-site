@@ -93,7 +93,7 @@
   });
 
   /* ---------- quote form ---------- */
-  var form = $('#form'), msg = $('#form-msg'), done = $('#form-done');
+  var form = $('#form'), msg = $('#form-msg'), done = $('#form-done'), hp = $('[name=_honey]', form);
   form.addEventListener('input', function (e) { var f = e.target.closest('.f'); if (f) f.classList.remove('is-bad'); });
   form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -105,28 +105,35 @@
       if (!ok) { void f.offsetWidth; f.classList.add('is-bad'); bad.push(el); }
     });
     if (bad.length) { msg.textContent = 'Please fill in the highlighted fields.'; bad[0].focus(); return; }
+    if (hp && hp.value) return;
     msg.textContent = '';
     var products = d.getAll('products').join(', ') || 'Not specified';
-    var body = [
-      'Business name: ' + d.get('business'),
-      'Contact name: ' + d.get('name'),
-      'Work email: ' + d.get('email'),
-      'Shop type: ' + d.get('type'),
-      'Estimated monthly volume: ' + d.get('volume'),
-      'Products of interest: ' + products,
-      '',
-      'Notes:',
-      d.get('notes') || '-'
-    ].join('\n');
-    // No backend yet: hand the request to the visitor's email app, addressed to sales.
-    // To post to a form service instead, replace this line with a fetch() to your endpoint.
-    window.location.href = 'mailto:' + SALES_EMAIL + '?subject=' + encodeURIComponent('Wholesale pricing request - ' + d.get('business')) + '&body=' + encodeURIComponent(body);
-    done.hidden = false;
-    if (motion) {
-      gsap.from(done, { opacity: 0, duration: .4 });
-      gsap.from($$('svg *', done), { strokeDasharray: 200, strokeDashoffset: 200, duration: .9, stagger: .25, ease: 'power2.out' });
-      gsap.from($$('h3,p,button', done), { y: 20, opacity: 0, duration: .6, stagger: .08, delay: .3, ease: 'power3.out' });
+    var cfg = window.RA_CONFIG || {}, btn = $('button[type=submit]', form);
+    var payload = {
+      _subject: 'New QUOTE request - Red Apple Distribution', _template: 'table', _captcha: 'false', _honey: '',
+      type: 'quote', source: 'landing page form', site: 'redappledistribution.com', submitted_at: new Date().toISOString(),
+      business: d.get('business'), name: d.get('name'), email: d.get('email'), shop_type: d.get('type'),
+      monthly_volume: d.get('volume'), products_of_interest: products, notes: d.get('notes') || '-'
+    };
+    function fail() {
+      btn.disabled = false; btn.textContent = 'Request pricing';
+      msg.innerHTML = 'Sorry, we could not send your request. Please call <a href="tel:+13479379103">(347) 937-9103</a> or email <a href="mailto:' + SALES_EMAIL + '">' + SALES_EMAIL + '</a>.';
     }
+    if (!cfg.endpoint) { fail(); return; }
+    btn.disabled = true; btn.textContent = 'Sending...';
+    fetch(cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !(j.success === true || j.success === 'true')) { fail(); return; }
+        btn.disabled = false; btn.textContent = 'Request pricing';
+        done.hidden = false;
+        if (motion) {
+          gsap.from(done, { opacity: 0, duration: .4 });
+          gsap.from($$('svg *', done), { strokeDasharray: 200, strokeDashoffset: 200, duration: .9, stagger: .25, ease: 'power2.out' });
+          gsap.from($$('h3,p,button', done), { y: 20, opacity: 0, duration: .6, stagger: .08, delay: .3, ease: 'power3.out' });
+        }
+      })
+      .catch(fail);
   });
   $('#form-again').addEventListener('click', function () { done.hidden = true; });
 

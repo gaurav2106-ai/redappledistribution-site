@@ -312,3 +312,21 @@ h1,h2,h3,p{margin:0}
 
 .brands__h{padding-bottom:40px}.brands{padding-bottom:0}.brands .brands__grid{margin-top:0}
 .brands>.wrap:last-child{padding-top:64px;padding-bottom:120px}
+
+/* ===== animated category tiles ===== */
+@property --t{syntax:'<angle>';inherits:true;initial-value:0deg}
+.scene{position:absolute;inset:0;z-index:-2;perspective:1100px;background:radial-gradient(70% 60% at 50% 42%,#9A1A26 0%,#6A0C14 45%,#3A0509 100%);overflow:hidden}
+.scene__floor{position:absolute;left:50%;top:60%;width:62%;height:12%;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent);filter:blur(8px)}
+.ring{position:absolute;left:50%;top:12%;height:44%;width:0;transform-style:preserve-3d;transform:rotateX(-8deg) rotateY(var(--t));animation:ra-spin 26s linear infinite;--R:clamp(95px,11.5vw,170px)}
+.ring img{position:absolute;left:0;top:0;height:100%;width:auto;max-width:none;object-fit:contain;transform:translateX(-50%) rotateY(var(--a)) translateZ(var(--R)) rotateY(calc(var(--a) * -1 - var(--t)));filter:drop-shadow(0 18px 20px rgba(0,0,0,.45));z-index:auto;transition:none}
+.tile:hover .ring img{transform:translateX(-50%) rotateY(var(--a)) translateZ(var(--R)) rotateY(calc(var(--a) * -1 - var(--t)))}
+.tile--c .ring{height:32%;top:9%}
+@keyframes ra-spin{to{--t:360deg}}
+.tile:hover .ring{animation-duration:14s}
+.fx{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.drift{animation:ra-drift 16s ease-in-out infinite alternate;transform-origin:50% 55%}
+@keyframes ra-drift{from{transform:perspective(900px) scale(1.08) rotateY(-3deg) rotateX(1.5deg) translate3d(-1.5%,0,0)}to{transform:perspective(900px) scale(1.14) rotateY(3deg) rotateX(-1.5deg) translate3d(1.5%,-1%,0)}}
+.tile:hover .drift{transform:perspective(900px) scale(1.14)}
+@media (max-width:860px){.ring{--R:clamp(70px,21vw,120px);height:50%}.tile--a .ring{height:54%}}
+@media (prefers-reduced-motion:reduce){.ring{animation:none}.drift{animation:none;transform:none}.fx{display:none}}
+@media (max-width:860px){.tile--c .ring{height:30%;top:8%}.tile{min-height:280px}}

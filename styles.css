@@ -340,3 +340,16 @@ h1,h2,h3,p{margin:0}
 .tile:hover .solo{animation-duration:5s;transform:none}
 @media (prefers-reduced-motion:reduce){.solo{animation:none;transform:translateX(-50%)}}
 .tile--b .solo{height:58%;top:6%}.tile--e .solo{height:62%;top:5%}
+
+/* pop-up: the product lifts out of the photo (cutout layer aligned to the photo) */
+.tile:has(.pop):after{z-index:-2}
+.tile .pop{z-index:-1;pointer-events:none;transform-origin:50% 62%;filter:drop-shadow(0 0 0 rgba(0,0,0,0));animation:ra-pop 5.6s var(--ease) infinite;will-change:transform,filter}
+.tile--b .pop{animation-delay:.2s}.tile--d .pop{animation-delay:1.3s}.tile--e .pop{animation-delay:2.4s}
+@keyframes ra-pop{
+  0%,56%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 0 rgba(0,0,0,0))}
+  10%{transform:translateY(-5%) scale(1.15);filter:drop-shadow(0 28px 22px rgba(0,0,0,.55))}
+  16%{transform:translateY(-3.5%) scale(1.1);filter:drop-shadow(0 22px 18px rgba(0,0,0,.5))}
+  44%{transform:translateY(-3.5%) scale(1.1);filter:drop-shadow(0 22px 18px rgba(0,0,0,.5))}
+}
+.tile:hover .pop{animation:none;transform:translateY(-4%) scale(1.12);filter:drop-shadow(0 26px 20px rgba(0,0,0,.55));transition:transform .5s cubic-bezier(.34,1.56,.64,1),filter .5s var(--ease)}
+@media (prefers-reduced-motion:reduce){.tile .pop{animation:none}}

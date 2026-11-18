@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /shop/admin
+Disallow: /shop/account
+Disallow: /shop/quote-summary
 
 Sitemap: https://redappledistribution.com/sitemap.xml

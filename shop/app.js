@@ -73,7 +73,7 @@ let MOCK=false;
 try{if(/[?&]authmock=1/.test(location.search))sessionStorage.setItem('ra_authmock','1');MOCK=sessionStorage.getItem('ra_authmock')==='1'&&(!AUTHC.url||LOCALH)}catch(e){}
 let MOCKC=false;try{if(MOCK){if(/[?&]confirm=1/.test(location.search))sessionStorage.setItem('ra_authmock_confirm','1');MOCKC=sessionStorage.getItem('ra_authmock_confirm')==='1'}}catch(e){}
 const AUTH_ON=MOCK||!!(AUTHC.url&&AUTHC.anonKey);
-const ADMINS=['gaurav@redappledistro.com','sales@redappledistro.com'];
+const ADMINS=['gaurav@redappledistro.com','sales@redappledistro.com','ayesha@redappledistro.com','gurpreet@redappledistro.com','kabir@redappledistro.com','lisa@redappledistro.com','sapnameena@redappledistro.com'];
 const STATES_US=["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 const PAYS=['Zelle','ACH/bank transfer','Wire','Check','Net terms request','Other'];
 const SK='ra_auth';

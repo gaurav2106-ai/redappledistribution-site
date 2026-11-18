@@ -353,3 +353,8 @@ h1,h2,h3,p{margin:0}
 }
 .tile:hover .pop{animation:none;transform:translateY(-4%) scale(1.12);filter:drop-shadow(0 26px 20px rgba(0,0,0,.55));transition:transform .5s cubic-bezier(.34,1.56,.64,1),filter .5s var(--ease)}
 @media (prefers-reduced-motion:reduce){.tile .pop{animation:none}}
+/* center the rings in their cards */
+.tile--a .ring{top:27%;height:46%}.tile--a .scene__floor{top:72%}
+.tile--c .ring{top:11%;height:38%}.tile--c .scene__floor{top:50%}
+@media (max-width:860px){.tile--a .ring{top:10%;height:48%}.tile--a .scene__floor{top:56%}.tile--c .ring{top:8%;height:34%}.tile--c .scene__floor{top:44%}}
+.tile--a .ring{top:22%;height:44%}.tile--a .scene__floor{top:66%}

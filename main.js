@@ -392,6 +392,7 @@
           ry = gsap.quickTo(el, 'rotationY', { duration: .8, ease: 'elastic.out(1,.7)' }),
           z = gsap.quickTo(el, 'z', { duration: .5, ease: 'power3.out' });
       el.addEventListener('pointermove', function (e) {
+        if (e.target.closest && e.target.closest('.tile__go')) { rx(0); ry(0); z(0); return; }
         var r = el.getBoundingClientRect();
         var nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5;
         ry(nx * max * 2); rx(-ny * max * 2); z(lift);
@@ -399,6 +400,35 @@
       el.addEventListener('pointerleave', function () { rx(0); ry(0); z(0); });
     }
     $$('.tile').forEach(function (t) { tilt(t, 5, 18); });
+    /* Arrow pick-up: hover the arrow on a ring tile, the front product flies to it and the arrow becomes that product. */
+    $$('.tile--a, .tile--c').forEach(function (tile) {
+      var go = $('.tile__go', tile), arr = $('.arr', go), imgs = $$('.ring img', tile), pick = null, src = null;
+      if (!go || !imgs.length) return;
+      function rel(r) { var t = tile.getBoundingClientRect(); return { x: r.left - t.left, y: r.top - t.top, w: r.width, h: r.height }; }
+      go.addEventListener('pointerenter', function () {
+        if (pick) { gsap.killTweensOf(pick); pick.remove(); if (src) gsap.set(src, { opacity: 1 }); }
+        src = imgs.reduce(function (a, b) { return b.getBoundingClientRect().width > a.getBoundingClientRect().width ? b : a; });
+        var from = rel(src.getBoundingClientRect()), to = rel(go.getBoundingClientRect());
+        pick = document.createElement('img'); pick.src = src.src; pick.alt = ''; pick.className = 'pickfly';
+        pick.style.cssText = 'left:' + from.x + 'px;top:' + from.y + 'px;width:' + from.w + 'px;height:' + from.h + 'px;';
+        tile.appendChild(pick);
+        gsap.set(src, { opacity: 0 });
+        var h = 34, w = from.w / from.h * h;
+        gsap.killTweensOf([go, arr]);
+        gsap.to(arr, { scale: 0, rotate: -90, opacity: 0, duration: .25, ease: 'power3.in' });
+        gsap.to(go, { scale: 1.3, duration: .5, ease: 'back.out(1.6)' });
+        gsap.to(pick, { left: to.x + to.w / 2 - w / 2, top: to.y + to.h / 2 - h / 2, width: w, height: h, rotate: 360, duration: .75, ease: 'power3.inOut' });
+      });
+      go.addEventListener('pointerleave', function () {
+        if (!pick) return;
+        var p = pick, s2 = src; pick = null;
+        var to = rel(s2.getBoundingClientRect());
+        gsap.to(go, { scale: 1, duration: .4, ease: 'power3.out' });
+        gsap.to(arr, { scale: 1, rotate: 0, opacity: 1, duration: .35, delay: .2, ease: 'power3.out' });
+        gsap.to(p, { left: to.x, top: to.y, width: to.w, height: to.h, rotate: 720, duration: .6, ease: 'power3.inOut',
+          onComplete: function () { p.remove(); gsap.set(s2, { opacity: 1 }); } });
+      });
+    });
     var hs = $('.hero__side');
     if (hs) {
       var hero = $('.hero');

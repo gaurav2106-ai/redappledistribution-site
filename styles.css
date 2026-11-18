@@ -358,3 +358,7 @@ h1,h2,h3,p{margin:0}
 .tile--c .ring{top:11%;height:38%}.tile--c .scene__floor{top:50%}
 @media (max-width:860px){.tile--a .ring{top:10%;height:48%}.tile--a .scene__floor{top:56%}.tile--c .ring{top:8%;height:34%}.tile--c .scene__floor{top:44%}}
 .tile--a .ring{top:22%;height:44%}.tile--a .scene__floor{top:66%}
+
+/* arrow pick-up */
+.tile__go{z-index:4}
+.tile .pickfly{position:absolute;inset:auto;max-width:none;object-fit:contain;z-index:5;pointer-events:none;transition:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}

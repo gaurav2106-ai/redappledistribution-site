@@ -4,6 +4,7 @@
    showPrices: false hides prices everywhere and shows "Get a quote" instead. Set to true to show prices again. */
 window.RA_CONFIG = {
   endpoint: 'https://formsubmit.co/ajax/sales@redappledistro.com',
+  backupKey: '', /* Web3Forms access key (public). When set, used automatically if FormSubmit fails. */
   showPrices: false
 };
 

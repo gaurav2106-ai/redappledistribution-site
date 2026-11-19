@@ -535,3 +535,30 @@ fieldset.rq-bad{outline:1px solid #FFC4B8;outline-offset:6px;border-radius:8px}
 @media(max-width:899px){.cats__grid>li:nth-child(4),.cats__grid>li:nth-child(8){grid-column:span 2}.cats__grid>li:nth-child(7){grid-column:span 1}.cats__grid>li:nth-child(4) .cat__art,.cats__grid>li:nth-child(8) .cat__art{height:72%}}
 .nav__logo{min-height:44px}
 .nav__links a:not(.btn),.foot__col a{min-width:44px}
+
+
+/* admin accounts table: compact, aligned, words never split mid-word */
+.adm-acc{font-size:13px;line-height:1.35;table-layout:auto}
+.adm-acc th{font-size:11px;letter-spacing:.1em;padding:12px 12px}
+.adm-acc td{padding:12px;vertical-align:middle;overflow-wrap:normal;word-break:normal}
+.adm-acc th:last-child,.adm-acc td:last-child{padding-right:16px;text-align:right}
+.adm-acc b{display:block;font-weight:600}
+.adm-acc .adm-sub{font-size:12px;margin-top:2px}
+.adm-acc .adm-em,.adm-acc .adm-ph,.adm-acc .adm-dt{white-space:nowrap}
+.adm-acc .adm-req{min-width:120px;max-width:200px}
+.adm-acc .aa-badge.sm{padding:3px 10px;font-size:12px;gap:6px;white-space:nowrap}
+.adm-acc .aa-badge i{width:7px;height:7px}
+.adm-acc .rq-btn.aa-sm{min-height:32px;padding:0 14px;font-size:12px;white-space:nowrap}
+.adm-acc td[data-l=Status]{white-space:nowrap}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media(max-width:1180px){
+ .adm-acc thead{display:none}.adm-acc,.adm-acc tbody,.adm-acc tr,.adm-acc td{display:block;width:100%}
+ .adm-acc tr{padding:12px 4px;border-bottom:1px solid var(--line-b)}
+ .adm-acc td{border:0;padding:4px 14px;text-align:left!important;white-space:normal!important;max-width:none!important}
+ .adm-acc td:before{content:attr(data-l);display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--on-b-mute)}
+ .adm-acc td.adm-act:before{display:none}.adm-acc td.adm-act{padding-top:8px}
+}
+@media(min-width:700px) and (max-width:1180px){
+ .adm-acc tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;padding:16px 8px}
+ .adm-acc td{padding:2px 14px}.adm-acc td.adm-act{grid-column:1/-1;padding-top:6px}
+}

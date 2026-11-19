@@ -9,7 +9,7 @@ Every page: own title, meta description, self canonical, one h1, product text/li
 JSON-LD (Product has NO price), noindex on private routes. Behaviour comes from app.js (loaded by every page).
 No external deps. Plain hyphens only in copy.
 """
-import json, os, re, shutil, sys
+import json, os, re, shutil, sys, hashlib
 from urllib.parse import quote, unquote
 from html import escape as _esc
 
@@ -250,6 +250,16 @@ ALERTS = '''<section class="sec sec--d alerts" aria-labelledby="al-h"><div class
 <input class="rq-hp" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true"><p class="sub__msg" role="status" aria-live="polite"></p></form></div></section>'''
 
 
+
+def V(url):
+    """Add a short content hash so browsers load new files after a deploy (no hard refresh)."""
+    f = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), url.lstrip('/'))
+    try:
+        return url + '?v=' + hashlib.md5(open(f, 'rb').read()).hexdigest()[:8]
+    except OSError:
+        return url
+
+
 def head(title, desc, path, robots=None, ld=None, image=None, typ='website'):
     url = SITE + path
     img = image or SITE + '/assets/og-logo.png'
@@ -264,8 +274,8 @@ def head(title, desc, path, robots=None, ld=None, image=None, typ='website'):
     h.append('<link rel="icon" href="/assets/red-apple-mark.svg"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png">')
     h.append(FONTS)
     h.append('<script>document.documentElement.className+=" js"</script>')
-    h.append('<link rel="stylesheet" href="/shop/app.css"><link rel="stylesheet" href="/consent.css">')
-    h.append('<script src="/shop/config.js"></script>')
+    h.append('<link rel="stylesheet" href="%s"><link rel="stylesheet" href="%s">' % (V('/shop/app.css'), V('/consent.css')))
+    h.append('<script src="%s"></script>' % V('/shop/config.js'))
     for obj in ld or []:
         h.append('<script type="application/ld+json">%s</script>' % json.dumps(obj, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
     h.append('</head>')
@@ -277,7 +287,7 @@ def page(path, title, desc, main, data=True, flavors=False, robots=None, ld=None
     if flavors:
         scripts.append('/shop/flavors.js')
     scripts += ['/shop/reviews.js', '/consent.js', '/shop/app.js']
-    s = ''.join('<script src="%s" defer></script>' % x for x in scripts)
+    s = ''.join('<script src="%s" defer></script>' % V(x) for x in scripts)
     return (head(title, desc, path, robots, ld, image, typ) + '<body class="shop"><a class="skip" href="#main">Skip to content</a>' + AGE + HEADER +
             main + FOOTER + s + '</body></html>')
 

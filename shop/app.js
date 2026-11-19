@@ -266,7 +266,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 // ---- profile, header link, prompts, quote prefill and save
 async function loadProfile(){if(!SESS)return null;try{PROF=await B.getProfile()}catch(e){if(e.code==='signed_out')PROF=null}
  if(PROF)rememberName();if(PROF&&state.page==='quote')prefillQuote(MAIN());return PROF}
-function acctNav(){const on=!!SESS,n=on?String(localStorage.getItem('ra_auth_name')||''):'';$$('a[data-ra-acct]').forEach(a=>{a.textContent=on?'My account'+(n?' - '+n:''):'Sign in';a.setAttribute('href',on?'/shop/account/':'/shop/account/signin/')});$$('[data-ra-acct-cta]').forEach(e=>{e.hidden=on});const em=on?String(SESS.user.email||'').toLowerCase():'',staff=ADMINS.includes(em);$$('a[data-ra-acct]').forEach(a=>{let x=a.parentNode.querySelector('[data-ra-admin]');if(staff&&!x){x=document.createElement('a');x.className='nav__acct-btn btn btn--line btn--sm';x.setAttribute('data-ra-admin','');x.href='/shop/admin/';x.textContent='Admin dashboard';a.insertAdjacentElement('afterend',x)}else if(!staff&&x)x.remove()});$$('[data-acct-line]').forEach(e=>{e.hidden=!AUTH_ON||on})}
+function acctNav(){const on=!!SESS,n=on?String(localStorage.getItem('ra_auth_name')||''):'';$$('a[data-ra-acct]').forEach(a=>{a.textContent=on?'My account'+(n?' - '+n:''):'Sign in';a.setAttribute('href',on?'/shop/account/':'/shop/account/signin/')});$$('[data-ra-acct-cta]').forEach(e=>{e.hidden=on});$$('[data-ra-admin]').forEach(x=>x.remove());$$('[data-acct-line]').forEach(e=>{e.hidden=!AUTH_ON||on})}
 function rememberName(){try{const p=PROF;if(!SESS||!p)return;const f=String(p.name||'').trim().split(/\s+/)[0]||String(p.shop||'').trim();localStorage.setItem('ra_auth_name',f.slice(0,14))}catch(e){}acctNav()}
 function acctInfo(){return SESS?{account:'signed in',account_email:SESS.user.email,account_status:(PROF&&PROF.status)||'pending'}:{}}
 function prefillQuote(pg){if(!SESS||!PROF||!pg)return;$$('form[data-form=quote]',pg).forEach(f=>{if(f.dataset.pf===PROF.id)return;f.dataset.pf=PROF.id;const set=(n,v)=>{const i=$('[name='+n+']',f);if(i&&v&&!i.value)i.value=v};set('shop',PROF.shop);set('contact',PROF.name);set('email',PROF.email||SESS.user.email);set('whatsapp',PROF.whatsapp||PROF.phone);set('state',PROF.state)})}
@@ -298,7 +298,7 @@ function recovKind(){const hp=new URLSearchParams(RECOV.replace(/^#/,''));if(hp.
 async function doConfirmReturn(){const pg=MAIN(),hp=new URLSearchParams(RECOV.replace(/^#/,''));setH1(pg,'Confirming your email');paint(pg,()=>msgCard('One moment','Confirming your email','Signing you in...'));
  try{const t=hp.get('access_token'),u=await B.userFromToken(t);setSession({access_token:t,refresh_token:hp.get('refresh_token')||'',expires_at:+hp.get('expires_at')||nowS()+(+hp.get('expires_in')||3600),user:u});RECOV='';
   try{localStorage.removeItem('ra_signup_pending')}catch(e){}
-  PROF=null;await loadProfile();if(PROF)await notifySignup(profileMail('yes'));WELCOME='confirmed';await afterSignIn(null,false)}
+  PROF=null;await loadProfile();if(PROF)notifySignup(profileMail('yes'));WELCOME='confirmed';await afterSignIn(null,false)}
  catch(e){RECOV='';setH1(pg,'Email confirmed');paint(pg,()=>msgCard('Email confirmed','Email confirmed, please sign in','Thank you. Your email is confirmed. Sign in to open your account.','<p><button type="button" class="rq-btn" data-aa="view" data-v="in">Sign in</button></p>'))}}
 
 // ---- actions
@@ -331,6 +331,8 @@ async function doProfile(f){const v=rd(f);const bad=chk(f,['name','shop','phone'
   const p=await B.updateProfile(meta);PROF=Object.assign({},PROF||{},p||meta);D.edit=false;paintDash(MAIN());toast('Profile saved')}
  catch(e){busy(f,false);ferr(f,emsg(e,'profile'))}}
 const FORMS={signup:doSignup,signin:doSignin,forgot:doForgot,reset:doReset,profile:doProfile};
+// confirming the email (or signing in) in another tab or app moves this tab on by itself, no refresh
+window.addEventListener('storage',e=>{if(e.key!==SK)return;SESS=e.newValue?ld(SK,null):null;PROF=null;acctNav();if(SESS&&['signin','signup'].includes(state.page))afterSignIn(null,false)});
 document.addEventListener('submit',e=>{const f=e.target.closest&&e.target.closest('form[data-af]');if(!f)return;e.preventDefault();if(f.dataset.busy)return;const h=FORMS[f.dataset.af];if(h)h(f)});
 async function doSignOut(){await pushCart(false);const ok=!cDirty;await B.signOut();saveSess(null);PROF=null;try{localStorage.removeItem('ra_auth_name')}catch(e){}cReady=false;cDirty=false;D.q=null;D.err='';A.rows=null;A.q='';A.f='all';WELCOME=false;
  if(ok){cart={};sv('ra_cart',cart)}clearQuoteForms();pastLoading=false;acctNav();render();toast('You are signed out');go('/')}

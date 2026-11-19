@@ -131,3 +131,11 @@
   .rac__b{gap:6px!important}
   .rac__b>*{min-height:44px!important;padding:0 8px!important;font-size:12.5px!important;letter-spacing:.02em!important}
 }
+
+/* phones: slimmer still */
+@media(max-width:700px){
+  .rac{padding:8px 12px calc(8px + env(safe-area-inset-bottom))!important}
+  .rac__in{gap:6px!important}
+  .rac__p{font-size:12px!important;line-height:1.3!important}
+  .rac__b>*{min-height:38px!important;font-size:12px!important}
+}

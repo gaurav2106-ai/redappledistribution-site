@@ -253,7 +253,7 @@
       go.addEventListener('pointerenter', function () {
         if (pick) { gsap.killTweensOf(pick); pick.remove(); if (hide) gsap.set(hide, { opacity: 1 }); }
         var s = source(); hide = s.hide; landing = s.rect;
-        var from = s.rect, to = rel(go.getBoundingClientRect());
+        var from = s.rect, to = { x: tile.offsetWidth - 62, y: 20, w: 42, h: 42 };
         pick = document.createElement('img'); pick.src = s.src; pick.alt = ''; pick.className = 'pickfly';
         pick.style.cssText = 'left:' + from.x + 'px;top:' + from.y + 'px;width:' + from.w + 'px;height:' + from.h + 'px;';
         tile.appendChild(pick);

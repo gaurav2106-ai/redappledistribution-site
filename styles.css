@@ -299,8 +299,8 @@ h1,h2,h3,p{margin:0}
 .story__pin{position:sticky;top:0;height:100svh;overflow:hidden;perspective:1400px}
 .story__bg{position:absolute;inset:0;background:radial-gradient(90% 70% at 50% 45%,var(--sg,#8C1520),#1B0205 75%);transition:background .6s}
 .story__words{position:absolute;inset:0}
-.story__words span{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--disp);font-weight:600;font-size:min(clamp(90px,23vw,420px),calc(190vw / var(--c,6)));line-height:.85;color:var(--ivory);white-space:nowrap;opacity:0;will-change:transform,opacity}
-.story__items img{position:absolute;left:50%;top:46%;height:min(62vh,620px);width:auto;max-width:86vw;object-fit:contain;transform:translate(-50%,-50%);opacity:0;filter:drop-shadow(0 40px 50px rgba(0,0,0,.55));will-change:transform,opacity}
+.story__words span{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:var(--disp);font-weight:600;font-size:min(clamp(90px,23vw,420px),calc(190vw / var(--c,6)));line-height:.85;color:var(--ivory);white-space:nowrap;opacity:0;transform:none;will-change:transform,opacity}
+.story__items img{position:absolute;left:50%;top:46%;height:min(62vh,620px);width:auto;max-width:86vw;object-fit:contain;transform:none;opacity:0;filter:drop-shadow(0 40px 50px rgba(0,0,0,.55));will-change:transform,opacity}
 .story__copy{position:absolute;left:0;right:0;bottom:0;padding-bottom:clamp(28px,6vh,60px)}.story__row{display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:flex-end;gap:24px}
 .story__n{font-family:var(--disp);font-size:20px;letter-spacing:.12em;color:var(--on-b-mute);margin:0}.story__n b{color:var(--ivory);font-weight:600}
 .story__txt{position:relative;width:min(420px,100%);height:150px}
@@ -378,3 +378,18 @@ h1,h2,h3,p{margin:0}
 .btile{min-height:72px;display:flex;align-items:center}
 .brands__grid .btile{padding-right:12px}
 .nav__burger{min-width:44px}
+
+
+/* hero art: products dissolve inside a soft frame, nothing is cut by the screen edge */
+.rows-mask{position:absolute;right:4vw;top:15vh;bottom:11vh;width:35vw;z-index:0;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%,#000 80%,transparent 100%),linear-gradient(180deg,transparent 0,#000 16%,#000 84%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 22%,#000 80%,transparent 100%),linear-gradient(180deg,transparent 0,#000 16%,#000 84%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect}
+.rows-mask .rows{right:auto;left:-25%;width:150%;top:-12%;bottom:-12%;transform:rotate(-7deg) scale(1.05)}
+@media (max-width:860px){
+  .rows-mask{left:4vw;right:4vw;width:auto;top:9%;bottom:6%}
+  .rows-mask .rows{left:-25%;width:150%;top:-8%;bottom:-8%;transform:rotate(-5deg) scale(1)}
+}
+
+/* phones: the brand name sits above the product so it can be read */
+@media (max-width:860px){
+  .story__words span{top:19%}
+  .story__items img{top:52%;height:min(40vh,380px)}
+}

@@ -159,21 +159,58 @@ def img_src(p):
     return '/shop/' + p['i'] if p.get('i') else ''
 
 
-def art_picks(items, n=3):
-    """up to n products with photos, different brands first"""
+ART_USED_IDS, ART_USED_BRANDS = set(), set()
+
+
+def art_picks(items, n=3, track=True):
+    """up to n products with photos. Different brands first, and never a product or brand
+    already used in another page head, so no two pages show the same collage."""
     out, seen = [], set()
-    for p in items:
-        if p.get('i') and p['b'] not in seen:
+    for strict in (True, False):
+        for p in items:
+            if not p.get('i') or p in out or p['id'] in ART_USED_IDS:
+                continue
+            if p['b'] in seen or (strict and p['b'] in ART_USED_BRANDS):
+                continue
             out.append(p)
             seen.add(p['b'])
-        if len(out) == n:
-            return out
-    for p in items:
-        if p.get('i') and p not in out:
-            out.append(p)
+            if len(out) == n:
+                break
         if len(out) == n:
             break
+    for p in items:
+        if len(out) == n:
+            break
+        if p.get('i') and p not in out and p['id'] not in ART_USED_IDS:
+            out.append(p)
+    if track:
+        for p in out:
+            ART_USED_IDS.add(p['id'])
+            ART_USED_BRANDS.add(p['b'])
     return out
+
+
+def art_mix(cats, skip=0):
+    """one photo product from each listed category (page heads for About, Brands, All)"""
+    pool = []
+    for c in cats:
+        items = [p for p in P if p['c'] == c and p.get('i') and p['id'] not in ART_USED_IDS and p['b'] not in ART_USED_BRANDS]
+        if len(items) > skip:
+            pool.append(items[skip])
+    for p in pool:
+        ART_USED_IDS.add(p['id'])
+        ART_USED_BRANDS.add(p['b'])
+    return pool
+
+
+# page heads that must look different from each other are picked once, up front
+HEAD_ART = {}
+
+
+def head_art(key, cats, skip=0):
+    if key not in HEAD_ART:
+        HEAD_ART[key] = art_mix(cats, skip)
+    return HEAD_ART[key]
 
 
 # ---------------------------------------------------------------- shared chrome
@@ -343,13 +380,13 @@ def build_cat(slug):
     cr = [('Shop', '/shop/c/all/'), (title, path)] if slug != 'all' else [('Shop', path)]
     pre, em = EM.get(slug, ('Wholesale', title + '.'))
     h1 = '%s <em>%s</em>' % (pre, em)
-    art = art_html(art_picks(items), big_mark=True)
+    art = art_html(head_art('all', ['Vapes', 'Hydroxy', 'Edibles'], 2) if slug == 'all' else art_picks(items), big_mark=True)
     ph = phead(crumbs(*cr), 'Wholesale catalog', h1, LEAD[slug], art)
     cat_block = ''
     if slug == 'all':
         tiles = []
         for k, v in CATS.items():
-            ap = art_picks([p for p in P if p['c'] == v], 1)
+            ap = art_picks([p for p in P if p['c'] == v], 1, False)
             cnt = len([p for p in P if p['c'] == v])
             im = ('<img class="cat__art" src="%s" alt="" loading="lazy" decoding="async">' % e(img_src(ap[0]))) if ap else '<img class="cat__art is-mark" src="/assets/red-apple-mark.svg" alt="" loading="lazy">'
             tiles.append('<li><a class="cat" href="/shop/c/%s/">%s<span class="cat__t"><span class="cat__n">%s</span><span class="cat__c">%d products</span></span><span class="cat__go" aria-hidden="true">%s</span></a></li>' % (k, im, e(TITLES[k]), cnt, ARR))
@@ -433,7 +470,7 @@ def build_brands():
     names = sorted(bs, key=lambda n: n.lower())
     rows = ''.join('<li><a href="/shop/brand/%s/"><b>%s</b><i>%d</i></a></li>' % (e(enc(n)), e(n), len(bs[n])) for n in names)
     cr = [('Brands', '/shop/brands/')]
-    art = art_html(art_picks(P, 3), True)
+    art = art_html(head_art('brands', ['Shrooms', 'Flower', 'Pre-Rolls'], 1), True)
     ph = phead(crumbs(*cr), 'Brands we carry', 'Every <em>brand</em>', '%d brands across vapes, hydroxys, edibles, pre-rolls and more. Open one to see its products.' % len(names), art)
     main = '<main id="main" data-page="brands">%s<section class="sec sec--i" aria-label="Brand list"><div class="wrap"><ul class="blist" id="blist">%s</ul></div></section>%s</main>' % (ph, rows, ALERTS)
     path = '/shop/brands/'
@@ -444,11 +481,11 @@ def build_brand(b):
     lst = [p for p in P if p['b'] == b]
     path = '/shop/brand/%s/' % enc(b)
     cr = [('Brands', '/shop/brands/'), (b, path)]
-    art = art_html(art_picks(lst), True)
+    art = art_html(art_picks(lst, 3, False), True)
     ph = phead(crumbs(*cr), 'Brand', '<em>%s</em>' % e(b), brand_desc(b, lst), art)
     main = ('<main id="main" data-page="brand" data-brand="%s">%s<section class="sec sec--i" aria-label="Products"><div class="wrap"><ul class="pgrid" id="grid" data-static="%d">%s</ul>'
             '<p class="more"><button class="btn btn--ink" type="button" data-act="load-more" hidden>Load more products</button></p></div></section>%s</main>') % (e(b), ph, len(lst), cards(lst), ALERTS)
-    return write(path, page(path, '%s Wholesale | Red Apple Distribution' % clean(b), brand_desc(b, lst), main, ld=[crumb_ld(cr)], image=(SITE + img_src(art_picks(lst, 1)[0])) if art_picks(lst, 1) else None))
+    return write(path, page(path, '%s Wholesale | Red Apple Distribution' % clean(b), brand_desc(b, lst), main, ld=[crumb_ld(cr)], image=(SITE + img_src(art_picks(lst, 1, False)[0])) if art_picks(lst, 1, False) else None))
 
 
 def steps_block():
@@ -465,7 +502,7 @@ def cta_block(h='Ready to stock your <em>shelves?</em>'):
 def build_about():
     path = '/shop/about/'
     cr = [('About', path)]
-    ph = phead(crumbs(*cr), 'About us', 'Wholesale, made <em>easy.</em>', 'Red Apple Distribution is a wholesale supplier for smoke shops, vape shops, convenience stores and other retailers across the United States.', art_html(art_picks([BYID[i] for i in PICKS['trending'] if i in BYID], 3)))
+    ph = phead(crumbs(*cr), 'About us', 'Wholesale, made <em>easy.</em>', 'Red Apple Distribution is a wholesale supplier for smoke shops, vape shops, convenience stores and other retailers across the United States.', art_html(head_art('about', ['Hydroxy', 'Edibles', 'Vapes'], 0)))
     why = [('Quality', 'Genuine products only, sourced from trusted brands. What you order is what you stock.'),
            ('Variety', 'One supplier for many categories. Browse all brands or jump straight to new arrivals and trending products.'),
            ('Service', 'A real person follows up on every quote request by WhatsApp, phone or email, whichever you prefer.'),
@@ -686,6 +723,9 @@ def build_home_stub():
 
 
 def main():
+    head_art('about', ['Hydroxy', 'Edibles', 'Vapes'], 0)
+    head_art('brands', ['Shrooms', 'Flower', 'Pre-Rolls'], 1)
+    head_art('all', ['Vapes', 'Hydroxy', 'Edibles'], 2)
     big = []
     sizes = {}
     for s in ['all', 'new', 'trending'] + list(CATS):

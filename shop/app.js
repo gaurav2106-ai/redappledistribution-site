@@ -109,6 +109,7 @@ async function authed(path,o){o=o||{};const t=await tok();try{return await raw(p
 const PF=['name','shop','phone','whatsapp','state','requirements','payment_pref'];
 const pick=(o,ks)=>{const r={};ks.forEach(k=>{r[k]=o[k]==null?'':o[k]});return r};
 const remoteB={
+ async createAccountFor(email,password,data){await raw('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{email,password,data}});return{ok:true}},
  async signUp(email,password,data){const j=await raw('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{email,password,data}});if(j&&j.access_token&&j.user){setSession(j);return{ok:true}}return{ok:true,confirm:true}},
  async signIn(email,password){const j=await raw('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});setSession(j)},
  async signOut(){try{if(SESS)await raw('/auth/v1/logout',{method:'POST',token:SESS.access_token})}catch(e){}},
@@ -139,6 +140,7 @@ const mockB=(()=>{const L=()=>ld('ra_mock_db',{users:{},carts:{},quotes:[],mail:
  return{
  async signUp(email,pw,meta){await W();const d=L();email=email.toLowerCase();if(d.users[email])throw new AErr('User already registered','user_already_exists',422);if(pw.length<8)throw new AErr('Password should be at least 8 characters','weak_password',422);
   const id='mock-'+Math.random().toString(36).slice(2,10);d.users[email]={id,email,pw,profile:Object.assign({id,email,status:'pending',created_at:new Date().toISOString()},pick(meta,PF))};if(MOCKC){d.users[email].confirmed=false;d.mail.push({to:email,kind:'confirm',link:cLink(email),at:new Date().toISOString()});S(d);return{ok:true,confirm:true}}S(d);mk_(d.users[email]);return{ok:true}},
+ async createAccountFor(email,pw,meta){await W();const d=L();email=email.toLowerCase();adm();if(d.users[email])throw new AErr('User already registered','user_already_exists',422);const id='mock-'+Math.random().toString(36).slice(2,10);d.users[email]={id,email,pw,profile:Object.assign({id,email,status:'pending',created_at:new Date().toISOString()},pick(meta,PF))};if(MOCKC){d.users[email].confirmed=false;d.mail.push({to:email,kind:'confirm',link:cLink(email),at:new Date().toISOString()})}S(d);return{ok:true}},
  async resend(email){await W();const d=L();if(byEmail(d,email)){d.mail.push({to:email.toLowerCase(),kind:'confirm',link:cLink(email),at:new Date().toISOString()});S(d)}},
  async userFromToken(token){await W();const d=L(),m=/^mockconfirm\.(.+)$/.exec(token||''),u=m&&byEmail(d,decodeURIComponent(m[1]));if(!u)throw new AErr('Invalid or expired link','otp_expired',401);u.confirmed=true;S(d);return{id:u.id,email:u.email}},
  async signIn(email,pw){await W();const u=byEmail(L(),email);if(!u||u.pw!==pw)throw new AErr('Invalid login credentials','invalid_credentials',400);if(u.confirmed===false)throw new AErr('Email not confirmed','email_not_confirmed',400);mk_(u)},
@@ -417,11 +419,12 @@ function admBody(){if(A.loading&&!A.rows)return '<p class="rq-empty">Loading acc
   +'<td class="adm-act"><button type="button" class="rq-btn aa-sm'+(ok?' ghost':'')+'" data-aa="adm-set" data-id="'+esc(r.id)+'" data-to="'+(ok?'pending':'approved')+'">'+(ok?'Revoke':'Approve')+'</button></td></tr>'}).join('')+'</tbody></table></div>'}
 function admCount(){const r=A.rows||[];return r.length+' accounts, '+r.filter(x=>x.status!=='approved').length+' pending, showing '+admRows().length}
 function admPaintBody(pg){$$('[data-adm-body]',pg).forEach(e=>{e.innerHTML=admBody()});$$('[data-adm-count]',pg).forEach(e=>{e.textContent=A.rows?admCount():''})}
-const ADMTAB=s=>'<div class="adm-tabs" role="tablist" aria-label="Admin sections">'+(canAcct()?'<button type="button" role="tab" class="adm-tab'+(A.tab==='accounts'?' on':'')+'" aria-selected="'+(A.tab==='accounts')+'" data-aa="adm-tab" data-tab="accounts">Accounts</button>':'')+'<button type="button" role="tab" class="adm-tab'+(A.tab==='quotes'?' on':'')+'" aria-selected="'+(A.tab==='quotes')+'" data-aa="adm-tab" data-tab="quotes">Quotes</button><button type="button" role="tab" class="adm-tab'+(A.tab==='newquote'?' on':'')+'" aria-selected="'+(A.tab==='newquote')+'" data-aa="adm-tab" data-tab="newquote">New quote</button></div>';
+const ADMTAB=s=>'<div class="adm-tabs" role="tablist" aria-label="Admin sections">'+(canAcct()?'<button type="button" role="tab" class="adm-tab'+(A.tab==='accounts'?' on':'')+'" aria-selected="'+(A.tab==='accounts')+'" data-aa="adm-tab" data-tab="accounts">Accounts</button>':'')+'<button type="button" role="tab" class="adm-tab'+(A.tab==='quotes'?' on':'')+'" aria-selected="'+(A.tab==='quotes')+'" data-aa="adm-tab" data-tab="quotes">Quotes</button><button type="button" role="tab" class="adm-tab'+(A.tab==='newquote'?' on':'')+'" aria-selected="'+(A.tab==='newquote')+'" data-aa="adm-tab" data-tab="newquote">New quote</button><button type="button" role="tab" class="adm-tab'+(A.tab==='addacct'?' on':'')+'" aria-selected="'+(A.tab==='addacct')+'" data-aa="adm-tab" data-tab="addacct">Add account</button></div>';
 function paintAdmin(pg){setH1(pg,'Retailer accounts');
  if(!SESS){paint(pg,s=>'<p class="rq-lead" style="margin-bottom:18px">Team sign-in.</p>'+formSignin(s,'admin'));return}
  if(!isAdmin()){paint(pg,()=>'<div class="rq-card aa-card aa-msg"><h2 class="rq-h2">Not authorised</h2><p>This account does not have access to this page.</p><p><button type="button" class="rq-btn ghost" data-aa="signout">Sign out</button></p></div>');return}
  if(A.tab==='accounts'&&!canAcct())A.tab='newquote';
+ if(A.tab==='addacct'){acPaintAll(pg);return}
  if(A.tab==='newquote'){nqPaintAll(pg);if(!A.rows&&!A.loading)admLoad();return}
  if(A.tab==='quotes'){setH1(pg,'Quotes');
   paint(pg,s=>ADMTAB(s)+'<div class="adm-bar"><div class="rq-f"><label for="adm-qq-'+s+'">Search</label><input class="rq-in" id="adm-qq-'+s+'" type="search" data-aa-in="qq" autocomplete="off" placeholder="Shop, quote ref, email, agent" value="'+esc(A.qq)+'"></div>'
@@ -485,6 +488,23 @@ async function admLoad(){const pg=MAIN();A.loading=true;A.err='';admPaintBody(pg
 async function admSet(id,to,btn){const r=(A.rows||[]).find(x=>x.id===id);if(!r)return;const was=r.status;btn.disabled=true;r.status=to;admPaintBody(MAIN());
  try{await B.setStatus(id,to);toast((to==='approved'?'Approved: ':'Revoked: ')+(r.shop||r.email))}catch(e){r.status=was;admPaintBody(MAIN());toast(emsg(e,'admin'))}}
 function copyText(t){if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(t).then(()=>true,()=>false);return new Promise(r=>{const x=document.createElement('textarea');x.value=t;x.setAttribute('readonly','');x.style.cssText='position:fixed;left:-9999px';document.body.appendChild(x);x.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}x.remove();r(ok)})}
+// ---- agent account creation (Admin > Add account): staff register a retailer; owners approve in Accounts.
+const AC={done:null,err:'',busy:false};
+const acPw=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%',u=new Uint32Array(24);crypto.getRandomValues(u);return Array.from(u,x=>a[x%a.length]).join('')+'Aa1!'};
+const acWho=()=>{const e=SESS&&SESS.user&&SESS.user.email||'';return e};
+const acHTML=s=>{if(AC.done)return '<div class="nq-done"><h2>Account created</h2><p><b>'+esc(AC.done.shop)+'</b> ('+esc(AC.done.email)+') is registered and waiting for approval by our owners. The retailer will get an email to confirm the address; after that they can use "Forgot password" on the sign in page to choose their password.</p><div class="nq-actions"><button type="button" class="rq-btn" data-ac="again">Add another account</button></div></div>';
+ const f=(n,l,ph,t,req)=>'<div class="rq-f"><label for="ac-'+n+'-'+s+'">'+l+(req?' *':'')+'</label><input class="rq-in" id="ac-'+n+'-'+s+'" name="'+n+'" type="'+(t||'text')+'" maxlength="120" autocomplete="off" placeholder="'+ph+'"></div>';
+ return '<form class="nq-form ac-form" data-ac-form novalidate><div class="rq-row2">'+f('shop','Shop name','e.g. Smoke Hub','text',1)+f('name','Contact name','Owner or buyer','text',1)+'</div><div class="rq-row2">'+f('email','Email','name@shop.com','email',1)+f('phone','Phone','(555) 555-5555','tel',1)+'</div><div class="rq-row2"><div class="rq-f"><label for="ac-state-'+s+'">State *</label><select class="rq-sel" id="ac-state-'+s+'" name="state">'+stateOpts('').replace('Select your state','Select state')+'</select></div>'+f('whatsapp','WhatsApp (if different)','optional','tel')+'</div><div class="rq-f"><label for="ac-req-'+s+'">Notes</label><input class="rq-in" id="ac-req-'+s+'" name="requirements" maxlength="300" autocomplete="off" placeholder="What they buy, how the call went (optional)"></div><p class="nq-ferr" data-ac-ferr role="alert">'+esc(AC.err)+'</p><div class="nq-actions"><button type="submit" class="rq-btn"'+(AC.busy?' disabled':'')+'>'+(AC.busy?'Creating...':'Create account')+'</button></div><p class="adm-sub">Accounts stay pending until Gaurav, Sapna or sales@ approves them in the Accounts tab.</p></form>'};
+const acPaintAll=pg=>{pg=pg||MAIN();setH1(pg,'Add account');paint(pg,s=>ADMTAB(s)+acHTML(s))};
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ac]');if(!b)return;if(b.dataset.ac==='again'){AC.done=null;AC.err='';acPaintAll()}});
+document.addEventListener('submit',async e=>{const f=e.target.closest&&e.target.closest('[data-ac-form]');if(!f)return;e.preventDefault();if(AC.busy)return;
+ const v=formVals(f),er=$('[data-ac-ferr]',f),shop=String(v.shop||'').trim(),name=String(v.name||'').trim(),email=String(v.email||'').trim().toLowerCase();
+ const bad=!shop?['shop','Enter the shop name.']:!name?['name','Enter the contact name.']:!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?['email','Enter a valid email address.']:us10(v.phone).length!==10?['phone','Enter a 10 digit US phone number.']:!v.state?['state','Choose the state.']:null;
+ if(bad){er.textContent=bad[1];const i=$('[name='+bad[0]+']',f);if(i)i.focus();return}
+ er.textContent='';AC.busy=true;AC.err='';const sb=$('button[type=submit]',f);if(sb){sb.disabled=true;sb.textContent='Creating...'}
+ const who=acWho(),meta={name,shop,phone:fmtUS(v.phone),whatsapp:v.whatsapp?fmtUS(v.whatsapp):fmtUS(v.phone),state:v.state,requirements:(String(v.requirements||'').trim()+' [Added by agent '+who+']').trim(),payment_pref:''};
+ try{await B.createAccountFor(email,acPw(),meta);notifySignup(Object.assign({id:'',email,status:'pending',email_confirmed:'sent, added by '+who},meta));AC.done={shop,email};AC.busy=false;acPaintAll()}
+ catch(x){AC.busy=false;AC.err=x&&x.code==='user_already_exists'?'That email already has an account.':emsg(x,'signup');acPaintAll()}});
 // ---- agent quote builder (Admin > New quote): the agent types an order on a call for an approved retailer,
 // including items that are not on the website. Saved as a normal quote on the retailer's account (payload.source='agent').
 const NQK='ra_nq_draft',NQUN=CXU,NQUL=cxUL;
@@ -601,7 +621,7 @@ document.addEventListener('click',e=>{const a=e.target.closest('[data-aa]');if(!
  else if(k==='pq-add'||k==='pq-one'){const q=(D.q||[]).find(x=>String(x.id)===a.dataset.id);if(!q)return;const its=(q.payload&&q.payload.items)||[];toast(addMsg(addItems(k==='pq-one'?[its[+a.dataset.i]].filter(Boolean):its)))}
  else if(k==='adm-set')admSet(a.dataset.id,a.dataset.to,a);
  else if(k==='adm-reload'){A.rows=null;admLoad()}
- else if(k==='adm-tab'){A.tab=['quotes','newquote'].includes(a.dataset.tab)?a.dataset.tab:(canAcct()?'accounts':'newquote');paintAdmin(pg)}
+ else if(k==='adm-tab'){A.tab=['quotes','newquote','addacct'].includes(a.dataset.tab)?a.dataset.tab:(canAcct()?'accounts':'newquote');paintAdmin(pg)}
  else if(k==='adm-qreload'){A.quotes=null;admQLoad()}
  else if(k==='q-reply')qReply(a.dataset.id,a);
  else if(k==='q-open'){A.qOpen=a.dataset.id;admPaintQ(pg,true);const el=$$('[data-adm-qpanel] .qp',pg).find(x=>x.offsetParent!==null);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}

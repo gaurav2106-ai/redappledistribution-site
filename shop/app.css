@@ -647,3 +647,10 @@ fieldset.rq-bad{outline:1px solid #FFC4B8;outline-offset:6px;border-radius:8px}
 .aa-badge.is-x{background:rgba(0,0,0,.25);color:var(--ivory);border-color:rgba(255,240,220,.4);text-decoration:line-through;text-decoration-thickness:1px}
 .nq-cx{display:grid;gap:8px;max-width:560px}.nq-cx p{margin:0}
 .adm-qt .nq-cancel{border-color:rgba(255,180,168,.6)}
+
+/* Add account (staff) */
+[data-page=admin] .ac-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px;max-width:760px}
+[data-page=admin] .ac-form .rq-row2{display:contents}
+[data-page=admin] .ac-form .nq-ferr,[data-page=admin] .ac-form .nq-actions,[data-page=admin] .ac-form>.adm-sub,[data-page=admin] .ac-form>.rq-f:nth-last-of-type(1){grid-column:1/-1}
+[data-page=admin] .ac-form .nq-ferr{margin:0;min-height:0;font-size:13px}
+@media(max-width:560px){[data-page=admin] .ac-form{grid-template-columns:minmax(0,1fr)}}

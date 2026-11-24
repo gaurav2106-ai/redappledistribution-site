@@ -370,12 +370,12 @@ def art_html(prods, big_mark=False):
         imgs = '<img class="a a1 is-mark" src="/assets/red-apple-mark.svg" alt="" data-depth="14">'
     else:
         imgs = ''
-    return '<div class="phead__art%s" aria-hidden="false">%s</div>' % (' phead__art--grid' if len(prods) > 4 else '', imgs) if imgs else ''
+    return '<div class="phead__art phead__art--n%d" aria-hidden="false">%s</div>' % (len(prods) if prods else 1, imgs) if imgs else ''
 
 
 def phead(crumb_html, eyebrow, h1_html, lead, art='', extra=''):
     return ('<section class="phead sec--b%s"><div class="phead__panel" aria-hidden="true"></div><div class="wrap phead__in"><div class="phead__copy">%s'
-            '<p class="eyebrow">%s</p><h1 class="phead__h">%s</h1>%s%s</div></div>%s</section>'
+            '<p class="eyebrow">%s</p><h1 class="phead__h">%s</h1>%s%s</div>%s</div></section>'
             % (' phead--art' if art else '', crumb_html, e(eyebrow), h1_html, ('<p class="lead">%s</p>' % e(lead)) if lead else '', extra, art))
 
 

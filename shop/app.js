@@ -866,6 +866,7 @@ function initShell(){const age=$('#age');let ok=false;try{ok=localStorage.getIte
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenus();closeNv()}});
  addEventListener('scroll',()=>{const y=scrollY;nav.classList.toggle('is-solid',y>30);if(!links.classList.contains('is-open'))nav.classList.toggle('is-hidden',y>500&&y>lastY+4);if(y<lastY-4)nav.classList.remove('is-hidden');lastY=y},{passive:true});
  nav.classList.toggle('is-solid',scrollY>30);
+ const sh=$('.phead__art--show');if(sh){const im=$$('.a',sh),dots=$$('.phead__dot',sh),cap=$('.phead__cap',sh);let k=0,t=0;const go=n=>{im[k].classList.remove('is-on');dots[k].classList.remove('is-on');k=(n+im.length)%im.length;im[k].classList.add('is-on');dots[k].classList.add('is-on');cap.textContent=im[k].dataset.cap};const stop=()=>clearInterval(t);const play=()=>{stop();t=setInterval(()=>go(k+1),3200)};play();sh.addEventListener('pointerenter',stop);sh.addEventListener('pointerleave',play);dots.forEach((d,n)=>d.addEventListener('click',()=>{go(n);play()}));document.addEventListener('visibilitychange',()=>document.hidden?stop():play())}
  }
 
 // ---- boot

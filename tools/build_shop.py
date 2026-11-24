@@ -364,13 +364,18 @@ def crumb_ld(parts):
 
 
 def art_html(prods, big_mark=False):
+    if prods and len(prods) >= 2:
+        imgs = ''.join('<img class="a%s" src="%s" alt="%s" data-cap="%s"%s>' % (' is-on' if i == 0 else '', e(img_src(p)), e(alt_of(p)), e(p.get('c', '')), '' if i == 0 else ' loading="lazy"') for i, p in enumerate(prods))
+        dots = ''.join('<button type="button" class="phead__dot%s" aria-label="Show %s"></button>' % (' is-on' if i == 0 else '', e(p.get('c', 'product'))) for i, p in enumerate(prods))
+        return ('<div class="phead__art phead__art--show" aria-hidden="false"><div class="phead__stage">%s</div>'
+                '<div class="phead__meta"><span class="phead__cap">%s</span><span class="phead__dots">%s</span></div></div>' % (imgs, e(prods[0].get('c', '')), dots))
     if prods:
-        imgs = ''.join('<img class="a a%d" src="%s" alt="%s" data-depth="%d">' % (i + 1, e(img_src(p)), e(alt_of(p)), (i + 1) * 12) for i, p in enumerate(prods))
+        imgs = ''.join('<img class="a" src="%s" alt="%s">' % (e(img_src(p)), e(alt_of(p))) for p in prods)
     elif big_mark:
-        imgs = '<img class="a a1 is-mark" src="/assets/red-apple-mark.svg" alt="" data-depth="14">'
+        imgs = '<img class="a is-mark" src="/assets/red-apple-mark.svg" alt="">'
     else:
         imgs = ''
-    return '<div class="phead__art phead__art--n%d" aria-hidden="false">%s</div>' % (len(prods) if prods else 1, imgs) if imgs else ''
+    return '<div class="phead__art phead__art--n1" aria-hidden="false">%s</div>' % imgs if imgs else ''
 
 
 def phead(crumb_html, eyebrow, h1_html, lead, art='', extra=''):

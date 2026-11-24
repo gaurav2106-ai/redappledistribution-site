@@ -129,10 +129,10 @@ h1,h2,h3,h4,p,dl,dd,dt{margin:0}
 .phead__art--n1{grid-template-columns:minmax(0,340px);justify-content:center}
 .phead__art--n2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .phead__art--n4,.phead__art--n5,.phead__art--n6,.phead__art--n7,.phead__art--n8{grid-template-columns:repeat(4,minmax(0,1fr))}
-.phead__art .a{display:block;width:100%;aspect-ratio:1;object-fit:contain;box-sizing:border-box;padding:6%;border-radius:20px;background:linear-gradient(160deg,rgba(255,240,220,.11),rgba(255,240,220,.04));border:1px solid rgba(255,240,220,.14);filter:drop-shadow(0 10px 12px rgba(0,0,0,.35));animation:ra-flash .7s var(--out) both;animation-delay:calc(var(--i,0) * 90ms + .1s)}
-.phead__art .a:nth-child(1){--i:0}.phead__art .a:nth-child(2){--i:3}.phead__art .a:nth-child(3){--i:1}.phead__art .a:nth-child(4){--i:5}.phead__art .a:nth-child(5){--i:2}.phead__art .a:nth-child(6){--i:6}.phead__art .a:nth-child(7){--i:4}.phead__art .a:nth-child(8){--i:7}
+.phead__art .a{display:block;width:100%;aspect-ratio:1;object-fit:contain;box-sizing:border-box;padding:6%;border-radius:20px;background:linear-gradient(160deg,rgba(255,240,220,.11),rgba(255,240,220,.04));border:1px solid rgba(255,240,220,.14);filter:drop-shadow(0 10px 12px rgba(0,0,0,.35));animation:ra-flash .6s var(--out) both;animation-delay:calc(var(--i,0) * 280ms + 300ms)}
+.phead__art .a:nth-child(1){--i:0}.phead__art .a:nth-child(2){--i:1}.phead__art .a:nth-child(3){--i:2}.phead__art .a:nth-child(4){--i:3}.phead__art .a:nth-child(5){--i:4}.phead__art .a:nth-child(6){--i:5}.phead__art .a:nth-child(7){--i:6}.phead__art .a:nth-child(8){--i:7}
 .phead__art .is-mark{padding:22%}
-@keyframes ra-flash{0%{opacity:0;transform:scale(.92);filter:brightness(2.6) drop-shadow(0 0 22px rgba(255,240,220,.9))}35%{opacity:1;transform:scale(1.02);filter:brightness(1.7) drop-shadow(0 0 14px rgba(255,240,220,.5))}100%{opacity:1;transform:none;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}}
+@keyframes ra-flash{0%{opacity:0;transform:scale(.9);filter:brightness(4) drop-shadow(0 0 30px rgba(255,240,220,1))}18%{opacity:1;transform:scale(1.04);filter:brightness(3) drop-shadow(0 0 26px rgba(255,240,220,.9))}100%{opacity:1;transform:none;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}}
 @media (hover:hover) and (pointer:fine){.phead__art .a{transition:transform .2s var(--out),background .2s}.phead__art .a:hover{transform:translateY(-4px);background:linear-gradient(160deg,rgba(255,240,220,.18),rgba(255,240,220,.07))}}
 @media(max-width:899px){
   .phead{padding:92px 0 40px}

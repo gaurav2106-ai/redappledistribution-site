@@ -274,7 +274,7 @@ def head(title, desc, path, robots=None, ld=None, image=None, typ='website'):
     h.append('<link rel="icon" href="/assets/red-apple-mark.svg"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png">')
     h.append(FONTS)
     h.append('<script>document.documentElement.className+=" js"</script>')
-    h.append('<link rel="stylesheet" href="%s"><link rel="stylesheet" href="%s">' % (V('/shop/app.css'), V('/consent.css')))
+    h.append('<link rel="stylesheet" href="%s"><link rel="stylesheet" href="%s"><link rel="stylesheet" href="%s">' % (V('/shop/app.css'), V('/consent.css'), V('/glass.css')))
     h.append('<script src="%s"></script>' % V('/shop/config.js'))
     for obj in ld or []:
         h.append('<script type="application/ld+json">%s</script>' % json.dumps(obj, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/'))
@@ -286,7 +286,7 @@ def page(path, title, desc, main, data=True, flavors=False, robots=None, ld=None
     scripts = ['/shop/data.js'] if data else []
     if flavors:
         scripts.append('/shop/flavors.js')
-    scripts += ['/shop/reviews.js', '/consent.js', '/shop/app.js']
+    scripts += ['/shop/reviews.js', '/consent.js', '/shop/app.js', '/glass.js']
     s = ''.join('<script src="%s" defer></script>' % V(x) for x in scripts)
     return (head(title, desc, path, robots, ld, image, typ) + '<body class="shop"><a class="skip" href="#main">Skip to content</a>' + AGE + HEADER +
             main + FOOTER + s + '</body></html>')

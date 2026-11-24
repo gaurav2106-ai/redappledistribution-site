@@ -4,7 +4,7 @@
    showPrices: false hides prices everywhere and shows "Get a quote" instead. Set to true to show prices again. */
 window.RA_CONFIG = {
   endpoint: 'https://qdqioorsppkinjjyvata.supabase.co/functions/v1/send-lead', /* Supabase function that emails sales@ through Resend */
-  backupEndpoint: '', /* Formspree form URL, https://formspree.io/f/<id>. Used automatically if the main endpoint fails. */
+  backupEndpoint: 'https://formspree.io/f/xbgoqpbn', /* Formspree form URL, https://formspree.io/f/<id>. Used automatically if the main endpoint fails. */
   showPrices: false
 };
 

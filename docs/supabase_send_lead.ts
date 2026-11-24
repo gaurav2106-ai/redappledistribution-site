@@ -1,12 +1,19 @@
 // Supabase Edge Function: send-lead
-// Receives quote / contact / subscribe / review submissions from redappledistribution.com and emails them
-// to sales@redappledistro.com through Resend. Secret needed: RESEND_API_KEY (Edge Functions > Secrets).
-// Deploy with "Verify JWT" OFF (the website calls it without a user session).
+// Emails website submissions to sales@redappledistro.com through Resend. Secret: RESEND_API_KEY. Verify JWT: OFF.
+// Protection: only redappledistribution.com origin, fixed recipient and subject, required fields, field caps,
+// database rate limit per visitor and overall (table public.lead_hits), spam-trap field.
 const TO = 'sales@redappledistro.com';
 const FROM = 'Red Apple Website <quotes@mail.redappledistribution.com>';
 const ORIGINS = ['https://redappledistribution.com', 'https://www.redappledistribution.com'];
-const TYPES = ['quote', 'contact', 'subscribe', 'review'];
-const hits = new Map<string, number[]>();
+const SUBJECTS: Record<string, string> = {
+  quote: 'New QUOTE request - Red Apple Distribution',
+  contact: 'New contact message - Red Apple Distribution',
+  subscribe: 'New newsletter sign-up - Red Apple Distribution',
+  review: 'New customer REVIEW (to approve) - Red Apple Distribution',
+};
+const PER_VISITOR = 5;   // sends per visitor per 10 minutes
+const OVERALL = 40;      // sends overall per hour (protects the inbox and the Resend plan)
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
 const cors = (origin: string) => ({
@@ -20,52 +27,77 @@ const json = (o: unknown, status: number, origin: string) =>
 
 function val(v: unknown): string {
   if (v == null || v === '') return '-';
-  if (typeof v === 'object') return JSON.stringify(v, null, 1);
-  return String(v);
+  const s = typeof v === 'object' ? JSON.stringify(v, null, 1) : String(v);
+  return s.slice(0, 4000);
+}
+
+async function db(path: string, init: RequestInit = {}) {
+  const base = Deno.env.get('SUPABASE_URL')!;
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  return fetch(base + '/rest/v1/' + path, {
+    ...init,
+    headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', ...(init.headers || {}) },
+  });
 }
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin') || '';
-  const okOrigin = ORIGINS.includes(origin) || /^http:\/\/localhost(:\d+)?$/.test(origin);
+  const okOrigin = ORIGINS.includes(origin);
   const allow = okOrigin ? origin : ORIGINS[0];
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(allow) });
   if (req.method !== 'POST' || !okOrigin) return json({ success: false, error: 'not allowed' }, 403, allow);
 
-  // light per-IP limit (per function instance): 8 sends per 10 minutes
-  const ip = (req.headers.get('x-forwarded-for') || 'x').split(',')[0].trim();
-  const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < 600000);
-  if (recent.length >= 8) return json({ success: false, error: 'too many requests' }, 429, allow);
-  recent.push(now);
-  hits.set(ip, recent);
+  // rate limit, stored in the database so it holds across function instances
+  const ip = (req.headers.get('x-forwarded-for') || 'unknown').split(',')[0].trim().slice(0, 64);
+  try {
+    const tenMin = new Date(Date.now() - 600000).toISOString();
+    const hour = new Date(Date.now() - 3600000).toISOString();
+    const [a, b] = await Promise.all([
+      db('lead_hits?select=id&ip=eq.' + encodeURIComponent(ip) + '&at=gte.' + tenMin + '&limit=50').then((r) => r.json()),
+      db('lead_hits?select=id&at=gte.' + hour + '&limit=200').then((r) => r.json()),
+    ]);
+    if (!Array.isArray(a) || !Array.isArray(b)) return json({ success: false, error: 'unavailable' }, 503, allow);
+    if (a.length >= PER_VISITOR || b.length >= OVERALL) return json({ success: false, error: 'too many requests' }, 429, allow);
+    await db('lead_hits', { method: 'POST', body: JSON.stringify({ ip }), headers: { Prefer: 'return=minimal' } });
+    if (Math.random() < 0.05) await db('lead_hits?at=lt.' + new Date(Date.now() - 86400000).toISOString(), { method: 'DELETE' });
+  } catch {
+    return json({ success: false, error: 'unavailable' }, 503, allow);
+  }
 
   let body: Record<string, unknown>;
   try {
     const raw = await req.text();
     if (raw.length > 60000) return json({ success: false, error: 'too large' }, 413, allow);
     body = JSON.parse(raw);
+    if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length > 60) throw new Error('shape');
   } catch {
-    return json({ success: false, error: 'bad json' }, 400, allow);
+    return json({ success: false, error: 'bad request' }, 400, allow);
   }
   if (body._honey) return json({ success: true }, 200, allow); // bots: pretend it worked
   const type = String(body.type || '');
-  if (!TYPES.includes(type)) return json({ success: false, error: 'bad type' }, 400, allow);
-
-  const key = Deno.env.get('RESEND_API_KEY');
-  if (!key) return json({ success: false, error: 'not configured' }, 500, allow);
-
-  const subject = String(body._subject || 'New website lead - Red Apple Distribution').slice(0, 150);
-  const skip = new Set(['_subject', '_template', '_captcha', '_honey', 'items']);
-  const rows = Object.keys(body)
-    .filter((k) => !skip.has(k))
-    .map((k) => '<tr><td style="padding:6px 12px;border:1px solid #e5d9c8;background:#faf3e8;font-weight:600;vertical-align:top;white-space:nowrap">' + esc(k.replace(/_/g, ' ')) + '</td><td style="padding:6px 12px;border:1px solid #e5d9c8;white-space:pre-wrap">' + esc(val(body[k])) + '</td></tr>')
-    .join('');
-  const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#2b0a0d"><h2 style="margin:0 0 12px">' + esc(subject) + '</h2><table style="border-collapse:collapse">' + rows + '</table></div>';
-  const text = Object.keys(body).filter((k) => !skip.has(k)).map((k) => k + ': ' + val(body[k])).join('\n');
+  if (!SUBJECTS[type]) return json({ success: false, error: 'bad type' }, 400, allow);
 
   const email = String(body.email || '').trim();
+  if ((type === 'quote' || type === 'contact') && !EMAIL_RE.test(email)) return json({ success: false, error: 'email required' }, 400, allow);
+  if (type === 'subscribe' && !String(body.contact || '').trim()) return json({ success: false, error: 'contact required' }, 400, allow);
+  if (type === 'quote' && (!String(body.business || '').trim() || !String(body.name || '').trim())) {
+    return json({ success: false, error: 'business and name required' }, 400, allow);
+  }
+
+  const key = (Deno.env.get('RESEND_API_KEY') || Deno.env.get('ESEND_API_KEY'));
+  if (!key) return json({ success: false, error: 'not configured' }, 500, allow);
+
+  const subject = SUBJECTS[type];
+  const skip = new Set(['_subject', '_template', '_captcha', '_honey', 'items']);
+  const keys = Object.keys(body).filter((k) => !skip.has(k));
+  const rows = keys
+    .map((k) => '<tr><td style="padding:6px 12px;border:1px solid #e5d9c8;background:#faf3e8;font-weight:600;vertical-align:top;white-space:nowrap">' + esc(k.slice(0, 60).replace(/_/g, ' ')) + '</td><td style="padding:6px 12px;border:1px solid #e5d9c8;white-space:pre-wrap">' + esc(val(body[k])) + '</td></tr>')
+    .join('');
+  const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#2b0a0d"><h2 style="margin:0 0 12px">' + esc(subject) + '</h2><table style="border-collapse:collapse">' + rows + '</table></div>';
+  const text = keys.map((k) => k.slice(0, 60) + ': ' + val(body[k])).join('\n');
+
   const payload: Record<string, unknown> = { from: FROM, to: [TO], subject, html, text };
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) payload.reply_to = email;
+  if (EMAIL_RE.test(email)) payload.reply_to = email;
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',

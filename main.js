@@ -130,8 +130,15 @@
     }
     if (!cfg.endpoint) { fail(); return; }
     btn.disabled = true; btn.textContent = 'Sending...';
-    fetch(cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) })
-      .then(function (r) { return r.ok ? r.json() : null; })
+    function post(url) { return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) }); }
+    function ok(r) { return r.ok ? r.json().catch(function () { return { success: true }; }) : null; }
+    post(cfg.endpoint)
+      .then(ok, function () { return null; })
+      .then(function (j) {
+        if (j && (j.success === true || j.success === 'true')) return j;
+        if (!cfg.backupEndpoint) return null;
+        return post(cfg.backupEndpoint).then(function (r) { return r.ok ? { success: true } : null; }, function () { return null; });
+      })
       .then(function (j) {
         if (!j || !(j.success === true || j.success === 'true')) { fail(); return; }
         btn.disabled = false; btn.textContent = 'Request pricing';

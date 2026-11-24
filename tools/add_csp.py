@@ -16,12 +16,12 @@ def policy(hashes):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.onesignal.com",
         "font-src 'self' https://fonts.gstatic.com data:",
         "img-src 'self' data: https:",
-        "connect-src 'self' https://qdqioorsppkinjjyvata.supabase.co https://formsubmit.co https://api.web3forms.com https://*.onesignal.com",
+        "connect-src 'self' https://qdqioorsppkinjjyvata.supabase.co https://formspree.io https://*.onesignal.com",
         "frame-src https://*.onesignal.com",
         "worker-src 'self'",
         "object-src 'none'",
         "base-uri 'self'",
-        "form-action 'self' https://formsubmit.co https://api.web3forms.com",
+        "form-action 'self' https://formspree.io",
     ])
 
 def process(p):

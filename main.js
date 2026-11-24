@@ -71,7 +71,16 @@
     nav.classList.toggle('is-open', open);
     burger.setAttribute('aria-expanded', open);
   });
-  links.addEventListener('click', closeMenu);
+  links.addEventListener('click', function (e) { if (e.target.closest('.nv__b, .nv__s')) return; closeMenu(); });
+  /* Categories / Brands menus: open on hover (CSS) or by click/tap/keyboard; close on outside click or Escape */
+  var nvs = [].slice.call(document.querySelectorAll('[data-nv]'));
+  function closeNv(except) { nvs.forEach(function (n) { if (n !== except) $('.nv__b', n).setAttribute('aria-expanded', 'false'); }); }
+  nvs.forEach(function (n) {
+    var b = $('.nv__b', n);
+    b.addEventListener('click', function () { var o = b.getAttribute('aria-expanded') === 'true'; closeNv(n); b.setAttribute('aria-expanded', !o); });
+  });
+  document.addEventListener('click', function (e) { if (!e.target.closest('[data-nv]')) closeNv(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNv(); });
   window.addEventListener('scroll', function () {
     var y = window.scrollY;
     nav.classList.toggle('is-solid', y > 30);

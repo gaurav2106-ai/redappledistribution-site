@@ -106,7 +106,7 @@ let refreshing=null;
 function refreshSess(){if(refreshing)return refreshing;const s=SESS;refreshing=(async()=>{try{const j=await raw('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});setSession(j);return true}catch(e){if(e.status>=400&&e.status<500){saveSess(null);PROF=null;acctNav()}return false}finally{refreshing=null}})();return refreshing}
 async function tok(){if(!SESS)throw new AErr('signed out','signed_out',401);if(SESS.expires_at-nowS()<60){const ok=await refreshSess();if(!SESS)throw new AErr('signed out','signed_out',401);if(!ok)throw new AErr('network','network',0)}return SESS.access_token}
 async function authed(path,o){o=o||{};const t=await tok();try{return await raw(path,Object.assign({},o,{token:t}))}catch(e){if(e.status===401&&SESS&&!o._r){if(await refreshSess()&&SESS)return raw(path,Object.assign({},o,{token:SESS.access_token}));}throw e}}
-const PF=['name','shop','phone','whatsapp','state','requirements','payment_pref'];
+const PF=['name','shop','phone','whatsapp','state','requirements','payment_pref','address'];
 const pick=(o,ks)=>{const r={};ks.forEach(k=>{r[k]=o[k]==null?'':o[k]});return r};
 const remoteB={
  async createAccountFor(email,password,data){await raw('/auth/v1/signup?redirect_to='+encodeURIComponent(location.origin+'/shop/account/signin'),{method:'POST',body:{email,password,data}});return{ok:true}},
@@ -201,6 +201,7 @@ function profFields(s,p,pre){p=p||{};const I=n=>pre+n+'-'+s;const same=p.whatsap
  return '<div class="rq-row2">'+fld({id:I('name'),n:'name',l:'Your name',ac:'name',req:1,ph:'Full name',v:p.name})+fld({id:I('shop'),n:'shop',l:'Shop name',ac:'organization',req:1,ph:'Your shop name',v:p.shop})+'</div>'
  +'<div class="rq-row2">'+fld({id:I('phone'),n:'phone',t:'tel',l:'Phone (US)',ac:'tel',inm:'tel',req:1,ph:'(555) 123-4567',v:p.phone,max:20})+fld({id:I('wa'),n:'whatsapp',t:'tel',l:'WhatsApp number',opt:1,ac:'off',inm:'tel',ph:'(555) 123-4567',v:same?p.phone:p.whatsapp,ro:same,max:24})+'</div>'
  +'<label class="rq-check aa-same"><input type="checkbox" name="wa_same"'+(same?' checked':'')+'> <span>My WhatsApp number is the same as my phone</span></label>'
+ +fld({id:I('addr'),n:'address',l:'Shop address',ac:'street-address',req:1,ph:'Street, city, ZIP',v:p.address,max:200})
  +'<div class="rq-row2">'+fld({id:I('state'),n:'state',t:'select',l:'Your state',ac:'address-level1',req:1,opts:stateOpts(p.state)})+fld({id:I('pay'),n:'payment_pref',t:'select',l:'Preferred payment method',opt:1,opts:payOpts(p.payment_pref),hint:'Preference only. Never enter card or bank numbers.'})+'</div>'
  +fld({id:I('req'),n:'requirements',t:'textarea',l:'What are you looking for?',opt:1,ph:'Brands, categories, flavors or target quantities',v:p.requirements})}
 function formSignup(s){const I=n=>'su-'+n+'-'+s;
@@ -209,6 +210,7 @@ function formSignup(s){const I=n=>'su-'+n+'-'+s;
  +'<div class="rq-row2">'+fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})+fld({id:I('pw'),n:'password',t:'password',l:'Password',ac:'new-password',req:1,hint:'At least 8 characters.'})+'</div>'
  +'<div class="rq-row2">'+fld({id:I('phone'),n:'phone',t:'tel',l:'Phone (US)',ac:'tel',inm:'tel',req:1,ph:'(555) 123-4567',max:20})+fld({id:I('wa'),n:'whatsapp',t:'tel',l:'WhatsApp number',opt:1,ac:'off',inm:'tel',ph:'(555) 123-4567',max:24})+'</div>'
  +'<label class="rq-check aa-same"><input type="checkbox" name="wa_same"> <span>My WhatsApp number is the same as my phone</span></label>'
+ +fld({id:I('addr'),n:'address',l:'Shop address',ac:'street-address',req:1,ph:'Street, city, ZIP',max:200})
  +'<div class="rq-row2">'+fld({id:I('state'),n:'state',t:'select',l:'Your state',ac:'address-level1',req:1,opts:stateOpts('')})+fld({id:I('pay'),n:'payment_pref',t:'select',l:'Preferred payment method',opt:1,opts:payOpts(''),hint:'Preference only. Never enter card or bank numbers.'})+'</div>'
  +fld({id:I('req'),n:'requirements',t:'textarea',l:'What are you looking for?',opt:1,ph:'Brands, categories, flavors or target quantities'})
  +HP+'<div class="aa-chk"><label class="rq-check"><input type="checkbox" name="age" id="'+I('age')+'" aria-describedby="'+I('age')+'-e" aria-required="true"> <span>I am 21 or older and I am signing up for a business that sells to adults 21 and older.</span></label><p class="aa-fe" id="'+I('age')+'-e" data-fe="age" role="alert"></p></div>'
@@ -245,7 +247,7 @@ const RULE={name:v=>v.length<2?'Please enter your name.':'',shop:v=>v.length<2?'
  password2:(v,a)=>v!==a.password?'The two passwords do not match.':'',
  phone:v=>us10(v).length!==10?'Please enter a valid US phone number (10 digits).':'',
  whatsapp:(v,a)=>!a.wa_same&&v&&digits(v).length<10?'Please enter a valid WhatsApp number, or leave it empty.':'',
- state:v=>!v?'Please choose your state.':'',age:v=>!v?'Please confirm to continue.':''};
+ address:v=>v.length<8?'Please enter the full shop address (street, city, ZIP).':'',state:v=>!v?'Please choose your state.':'',age:v=>!v?'Please confirm to continue.':''};
 function rd(f){const o={};$$('input,select,textarea',f).forEach(i=>{if(!i.name)return;o[i.name]=i.type==='checkbox'?i.checked:(i.type==='password'?i.value:i.value.trim())});if(f.dataset.af==='signin')o.__signin=1;if(o.wa_same)o.whatsapp=o.phone;return o}
 function setFE(f,n,msg){const p=$('[data-fe="'+n+'"]',f),i=$('[name="'+n+'"]',f);if(p)p.textContent=msg||'';if(i){i.classList.toggle('rq-bad',!!msg);if(msg)i.setAttribute('aria-invalid','true');else i.removeAttribute('aria-invalid')}}
 function chk(f,names,v){const bad=[];names.forEach(n=>{const m=RULE[n]?RULE[n](v[n],v):'';setFE(f,n,m);if(m)bad.push(n)});return bad}
@@ -320,9 +322,9 @@ async function doConfirmReturn(){const pg=MAIN(),hp=new URLSearchParams(RECOV.re
 // ---- actions
 async function afterSignIn(f,fresh){PROF=null;cReady=false;await Promise.all([loadProfile(),pullMerge(true)]);flushQuotes(false);retryNotify();confirmedNotify();acctNav();clearQuoteForms();
  const nx=f&&f.dataset.next;if(nx==='admin'){authRoute();return}go(nextPath(nx)||'/account')}
-async function doSignup(f){const v=rd(f);if(v.hp_check)return;const bad=chk(f,['name','shop','email','password','phone','whatsapp','state','age'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
+async function doSignup(f){const v=rd(f);if(v.hp_check)return;const bad=chk(f,['name','shop','email','password','phone','whatsapp','address','state','age'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
  ferr(f,'');busy(f,true,'Creating account...');
- try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,requirements:v.requirements,payment_pref:v.payment_pref},email=v.email.toLowerCase();
+ try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,address:v.address,requirements:v.requirements,payment_pref:v.payment_pref},email=v.email.toLowerCase();
   const r=await B.signUp(email,v.password,meta);
   if(r.confirm){sv('ra_signup_pending',{email});markResend(email);busy(f,false);paintConfirm(MAIN(),email,true);return}
   WELCOME=true;PROF=null;notifySignup(Object.assign({id:SESS.user.id,email,status:'pending',email_confirmed:'no (confirmation is off)'},meta));
@@ -341,9 +343,9 @@ async function doReset(f){const v=rd(f);const bad=chk(f,['password','password2']
   setSession({access_token:hp.get('access_token'),refresh_token:hp.get('refresh_token')||'',expires_at:+hp.get('expires_at')||nowS()+(+hp.get('expires_in')||3600),user:u});RECOV='';
   toast('Password updated');await afterSignIn(null,false)}
  catch(e){busy(f,false);ferr(f,emsg(e,'reset'))}}
-async function doProfile(f){const v=rd(f);const bad=chk(f,['name','shop','phone','whatsapp','state'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
+async function doProfile(f){const v=rd(f);const bad=chk(f,['name','shop','phone','whatsapp','address','state'],v);if(bad.length){ferr(f,'Please check the highlighted fields.');focusBad(f,bad[0]);return}
  ferr(f,'');busy(f,true,'Saving...');
- try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,requirements:v.requirements,payment_pref:v.payment_pref};
+ try{const meta={name:v.name,shop:v.shop,phone:fmtUS(v.phone),whatsapp:v.wa_same?fmtUS(v.phone):(v.whatsapp?fmtUS(v.whatsapp):''),state:v.state,address:v.address,requirements:v.requirements,payment_pref:v.payment_pref};
   const p=await B.updateProfile(meta);PROF=Object.assign({},PROF||{},p||meta);D.edit=false;paintDash(MAIN());toast('Profile saved')}
  catch(e){busy(f,false);ferr(f,emsg(e,'profile'))}}
 const FORMS={signup:doSignup,signin:doSignin,forgot:doForgot,reset:doReset,profile:doProfile};
@@ -392,7 +394,7 @@ function dashQuotes(){if(D.err==='q')return '<p class="rq-empty">We could not lo
 function dashHTML(s){const p=PROF;if(!p)return '<p class="rq-empty">Loading your account...</p>';
  const row=(k,v)=>'<div><dt>'+k+'</dt><dd>'+(v||'<span class="aa-none">Not provided</span>')+'</dd></div>';
  const prof=D.edit?'<form class="aa-edit" data-af="profile" novalidate onsubmit="return false">'+profFields(s,p,'pr-')+'<p class="rq-note" style="margin:-4px 0 14px">Email: '+esc(p.email||SESS.user.email)+' (contact us to change it)</p><p class="rq-err aa-ferr" data-err role="alert"></p><div class="aa-btns"><button type="submit" class="rq-btn">Save changes</button><button type="button" class="rq-btn ghost" data-aa="edit-off">Cancel</button></div></form>'
-  :'<dl class="aa-dl">'+row('Name',esc(p.name))+row('Shop',esc(p.shop))+row('Email',esc(p.email||SESS.user.email))+row('Phone',p.phone?'<a href="tel:+1'+us10(p.phone)+'">'+esc(p.phone)+'</a>':'')+row('WhatsApp',p.whatsapp?'<a href="'+esc(waLink(p.whatsapp))+'" target="_blank" rel="noopener">'+esc(p.whatsapp)+'</a>':'')+row('State',esc(p.state))+row('Payment preference',esc(p.payment_pref))+row('Looking for',esc(p.requirements))+'</dl><p style="margin-top:6px"><button type="button" class="rq-btn ghost aa-sm" data-aa="edit-on">Edit profile</button></p>';
+  :'<dl class="aa-dl">'+row('Name',esc(p.name))+row('Shop',esc(p.shop))+row('Email',esc(p.email||SESS.user.email))+row('Phone',p.phone?'<a href="tel:+1'+us10(p.phone)+'">'+esc(p.phone)+'</a>':'')+row('WhatsApp',p.whatsapp?'<a href="'+esc(waLink(p.whatsapp))+'" target="_blank" rel="noopener">'+esc(p.whatsapp)+'</a>':'')+row('Address',esc(p.address))+row('State',esc(p.state))+row('Payment preference',esc(p.payment_pref))+row('Looking for',esc(p.requirements))+'</dl><p style="margin-top:6px"><button type="button" class="rq-btn ghost aa-sm" data-aa="edit-on">Edit profile</button></p>';
  const note=p.status==='approved'?'Your account is approved. Request a quote any time and our team will connect with you.':'Our team is reviewing your account. You can browse and request quotes in the meantime, nothing is on hold.';
  return (WELCOME?'<div class="aa-welcome" role="status"><b>'+(WELCOME==='confirmed'?'Email confirmed. ':'')+'Welcome to Red Apple Distribution.</b> Your account is ready and we have your details.</div>':'')
  +'<div class="aa-top">'+statusBadge(p.status)+'<p class="aa-note">'+note+'</p></div>'
@@ -407,14 +409,14 @@ async function loadDash(){const pg=MAIN();paintDash(pg);
 
 // ---- admin approvals (UI check is cosmetic; the database policies decide)
 const A={rows:null,q:'',f:'all',err:'',loading:false,tab:'accounts',quotes:null,qerr:'',qloading:false,qq:'',qf:'all',qOpen:'',qItem:'',qCancel:''};
-function admRows(){const q=A.q.toLowerCase();return (A.rows||[]).filter(r=>(A.f==='all'||r.status===A.f)&&(!q||[r.shop,r.name,r.email,r.phone,r.whatsapp,r.state,r.payment_pref,r.requirements].join(' ').toLowerCase().includes(q)))}
+function admRows(){const q=A.q.toLowerCase();return (A.rows||[]).filter(r=>(A.f==='all'||r.status===A.f)&&(!q||[r.shop,r.name,r.email,r.phone,r.whatsapp,r.address,r.state,r.payment_pref,r.requirements].join(' ').toLowerCase().includes(q)))}
 function admBody(){if(A.loading&&!A.rows)return '<p class="rq-empty">Loading accounts...</p>';if(A.err)return '<p class="rq-empty">'+esc(A.err)+'</p>';const rows=admRows();
  if(!rows.length)return '<p class="rq-empty">No accounts match.</p>';
  return '<div class="adm-wrap"><table class="adm-tbl adm-acc"><thead><tr><th>Shop</th><th>Email</th><th>Phone / WhatsApp</th><th>State</th><th>Looking for</th><th>Joined</th><th>Status</th><th><span class="sr-only">Action</span></th></tr></thead><tbody>'
  +rows.map(r=>{const ok=r.status==='approved',wa=waLink(r.whatsapp);return '<tr data-row="'+esc(r.id)+'"><td data-l="Shop"><b>'+esc(r.shop)+'</b><span class="adm-sub">'+esc(r.name)+'</span></td>'
   +'<td data-l="Email" class="adm-em"><a href="mailto:'+esc(r.email)+'">'+esc(r.email)+'</a></td>'
   +'<td data-l="Phone / WhatsApp" class="adm-ph">'+(r.phone?'<a href="tel:+1'+us10(r.phone)+'">'+esc(r.phone)+'</a>':'-')+(wa?'<span class="adm-sub">WhatsApp <a href="'+esc(wa)+'" target="_blank" rel="noopener">'+esc(r.whatsapp)+'</a></span>':'')+'</td>'
-  +'<td data-l="State">'+esc(r.state||'-')+(r.payment_pref?'<span class="adm-sub">Pays by '+esc(String(r.payment_pref).toLowerCase())+'</span>':'')+'</td>'
+  +'<td data-l="State">'+esc(r.state||'-')+(r.address?'<span class="adm-sub">'+esc(r.address)+'</span>':'')+(r.payment_pref?'<span class="adm-sub">Pays by '+esc(String(r.payment_pref).toLowerCase())+'</span>':'')+'</td>'
   +'<td data-l="Looking for" class="adm-req">'+esc(r.requirements||'-')+'</td><td data-l="Joined" class="adm-dt">'+esc(fdate(r.created_at))+'</td><td data-l="Status"><span class="aa-badge sm '+(ok?'is-ok':'is-wait')+'"><i aria-hidden="true"></i>'+(ok?'Approved':'Pending')+'</span></td>'
   +'<td class="adm-act"><button type="button" class="rq-btn aa-sm'+(ok?' ghost':'')+'" data-aa="adm-set" data-id="'+esc(r.id)+'" data-to="'+(ok?'pending':'approved')+'">'+(ok?'Revoke':'Approve')+'</button></td></tr>'}).join('')+'</tbody></table></div>'}
 function admCount(){const r=A.rows||[];return r.length+' accounts, '+r.filter(x=>x.status!=='approved').length+' pending, showing '+admRows().length}
@@ -494,15 +496,15 @@ const acPw=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz234567
 const acWho=()=>{const e=SESS&&SESS.user&&SESS.user.email||'';return e};
 const acHTML=s=>{if(AC.done)return '<div class="nq-done"><h2>Account created</h2><p><b>'+esc(AC.done.shop)+'</b> ('+esc(AC.done.email)+') is registered and waiting for approval by our owners. The retailer will get an email to confirm the address; after that they can use "Forgot password" on the sign in page to choose their password.</p><div class="nq-actions"><button type="button" class="rq-btn" data-ac="again">Add another account</button></div></div>';
  const f=(n,l,ph,t,req)=>'<div class="rq-f"><label for="ac-'+n+'-'+s+'">'+l+(req?' *':'')+'</label><input class="rq-in" id="ac-'+n+'-'+s+'" name="'+n+'" type="'+(t||'text')+'" maxlength="120" autocomplete="off" placeholder="'+ph+'"></div>';
- return '<form class="nq-form ac-form" data-ac-form novalidate><div class="rq-row2">'+f('shop','Shop name','e.g. Smoke Hub','text',1)+f('name','Contact name','Owner or buyer','text',1)+'</div><div class="rq-row2">'+f('email','Email','name@shop.com','email',1)+f('phone','Phone','(555) 555-5555','tel',1)+'</div><div class="rq-row2"><div class="rq-f"><label for="ac-state-'+s+'">State *</label><select class="rq-sel" id="ac-state-'+s+'" name="state">'+stateOpts('').replace('Select your state','Select state')+'</select></div>'+f('whatsapp','WhatsApp (if different)','optional','tel')+'</div><div class="rq-f"><label for="ac-req-'+s+'">Notes</label><input class="rq-in" id="ac-req-'+s+'" name="requirements" maxlength="300" autocomplete="off" placeholder="What they buy, how the call went (optional)"></div><p class="nq-ferr" data-ac-ferr role="alert">'+esc(AC.err)+'</p><div class="nq-actions"><button type="submit" class="rq-btn"'+(AC.busy?' disabled':'')+'>'+(AC.busy?'Creating...':'Create account')+'</button></div><p class="adm-sub">Accounts stay pending until Gaurav, Sapna or sales@ approves them in the Accounts tab.</p></form>'};
+ return '<form class="nq-form ac-form" data-ac-form novalidate><div class="rq-row2">'+f('shop','Shop name','e.g. Smoke Hub','text',1)+f('name','Contact name','Owner or buyer','text',1)+'</div><div class="rq-row2">'+f('email','Email','name@shop.com','email',1)+f('phone','Phone','(555) 555-5555','tel',1)+'</div><div class="rq-f ac-wide"><label for="ac-address-'+s+'">Shop address *</label><input class="rq-in" id="ac-address-'+s+'" name="address" maxlength="200" autocomplete="off" placeholder="Street, city, ZIP"></div><div class="rq-row2"><div class="rq-f"><label for="ac-state-'+s+'">State *</label><select class="rq-sel" id="ac-state-'+s+'" name="state">'+stateOpts('').replace('Select your state','Select state')+'</select></div>'+f('whatsapp','WhatsApp (if different)','optional','tel')+'</div><div class="rq-f"><label for="ac-req-'+s+'">Notes</label><input class="rq-in" id="ac-req-'+s+'" name="requirements" maxlength="300" autocomplete="off" placeholder="What they buy, how the call went (optional)"></div><p class="nq-ferr" data-ac-ferr role="alert">'+esc(AC.err)+'</p><div class="nq-actions"><button type="submit" class="rq-btn"'+(AC.busy?' disabled':'')+'>'+(AC.busy?'Creating...':'Create account')+'</button></div><p class="adm-sub">Accounts stay pending until Gaurav, Sapna or sales@ approves them in the Accounts tab.</p></form>'};
 const acPaintAll=pg=>{pg=pg||MAIN();setH1(pg,'Add account');paint(pg,s=>ADMTAB(s)+acHTML(s))};
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ac]');if(!b)return;if(b.dataset.ac==='again'){AC.done=null;AC.err='';acPaintAll()}});
 document.addEventListener('submit',async e=>{const f=e.target.closest&&e.target.closest('[data-ac-form]');if(!f)return;e.preventDefault();if(AC.busy)return;
  const v=formVals(f),er=$('[data-ac-ferr]',f),shop=String(v.shop||'').trim(),name=String(v.name||'').trim(),email=String(v.email||'').trim().toLowerCase();
- const bad=!shop?['shop','Enter the shop name.']:!name?['name','Enter the contact name.']:!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?['email','Enter a valid email address.']:us10(v.phone).length!==10?['phone','Enter a 10 digit US phone number.']:!v.state?['state','Choose the state.']:null;
+ const bad=!shop?['shop','Enter the shop name.']:!name?['name','Enter the contact name.']:!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)?['email','Enter a valid email address.']:us10(v.phone).length!==10?['phone','Enter a 10 digit US phone number.']:String(v.address||'').trim().length<8?['address','Enter the full shop address (street, city, ZIP).']:!v.state?['state','Choose the state.']:null;
  if(bad){er.textContent=bad[1];const i=$('[name='+bad[0]+']',f);if(i)i.focus();return}
  er.textContent='';AC.busy=true;AC.err='';const sb=$('button[type=submit]',f);if(sb){sb.disabled=true;sb.textContent='Creating...'}
- const who=acWho(),meta={name,shop,phone:fmtUS(v.phone),whatsapp:v.whatsapp?fmtUS(v.whatsapp):fmtUS(v.phone),state:v.state,requirements:(String(v.requirements||'').trim()+' [Added by agent '+who+']').trim(),payment_pref:''};
+ const who=acWho(),meta={name,shop,phone:fmtUS(v.phone),whatsapp:v.whatsapp?fmtUS(v.whatsapp):fmtUS(v.phone),state:v.state,address:String(v.address||'').trim(),requirements:(String(v.requirements||'').trim()+' [Added by agent '+who+']').trim(),payment_pref:''};
  try{await B.createAccountFor(email,acPw(),meta);notifySignup(Object.assign({id:'',email,status:'pending',email_confirmed:'sent, added by '+who},meta));AC.done={shop,email};AC.busy=false;acPaintAll()}
  catch(x){AC.busy=false;AC.err=x&&x.code==='user_already_exists'?'That email already has an account.':emsg(x,'signup');acPaintAll()}});
 // ---- agent quote builder (Admin > New quote): the agent types an order on a call for an approved retailer,

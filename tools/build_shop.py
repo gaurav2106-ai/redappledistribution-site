@@ -9,6 +9,8 @@ Every page: own title, meta description, self canonical, one h1, product text/li
 JSON-LD (Product has NO price), noindex on private routes. Behaviour comes from app.js (loaded by every page).
 No external deps. Plain hyphens only in copy.
 """
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import json, os, re, shutil, sys, hashlib
 from urllib.parse import quote, unquote
 from html import escape as _esc
@@ -402,7 +404,7 @@ def build_cat(slug):
             tiles.append('<li><a class="cat" href="/shop/c/%s/">%s<span class="cat__t"><span class="cat__n">%s</span><span class="cat__c">%d products</span></span><span class="cat__go" aria-hidden="true">%s</span></a></li>' % (k, im, e(TITLES[k]), cnt, ARR))
         cat_block = '<section class="sec sec--d cats" aria-labelledby="cats-h"><div class="wrap"><h2 class="h2" id="cats-h">Shop by <em>category</em></h2><ul class="cats__grid">%s</ul></div></section>' % ''.join(tiles)
     puff = any(dk(p['n']) for p in items)
-    tools = ('<form class="tools" id="tools" role="search" aria-label="Filter products" onsubmit="return false">'
+    tools = ('<form class="tools" id="tools" role="search" aria-label="Filter products">'
              '<div class="tf tf--q"><label for="f-q">Search</label><input id="f-q" type="search" name="q" autocomplete="off" placeholder="Product or brand"></div>'
              '<div class="tf"><label for="f-b">Brand</label><select id="f-b" name="brand"><option value="">All brands</option></select></div>'
              + ('<div class="tf"><label for="f-p">Puff count</label><select id="f-p" name="puff"><option value="">Any</option><option value="10">10K and up</option><option value="20">20K and up</option><option value="30">30K and up</option></select></div>' if puff else '') +
@@ -763,6 +765,8 @@ def main():
     over = [k for k, v in sizes.items() if v > 30000]
     print('pages: %d  (+%d alias redirects)  products: %d  brands: %d' % (len(sizes), na, len(P), len(brands)))
     print('largest: %s %d bytes; over 30 KB: %s' % (mx[0], mx[1], over or 'none'))
+    import add_csp
+    add_csp.main()
     return 1 if over else 0
 
 

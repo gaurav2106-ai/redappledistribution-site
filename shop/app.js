@@ -15,7 +15,8 @@ let cart=ld('ra_cart',{}),vis=12,state={},qdone='',lastSent=null;
 const priceTxt=p=>CFG.showPrices?m0(p.p):'Get a quote';
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const emailOK=v=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v),phoneOK=v=>v.replace(/\D/g,'').length>=10;
-async function send(type,data){const SUBJ={quote:'New QUOTE request',contact:'New contact message',subscribe:'New newsletter sign-up',review:'New customer REVIEW (to approve)'};
+const SENT_AT={};
+async function send(type,data){if(Date.now()-(SENT_AT[type]||0)<8000)return true;SENT_AT[type]=Date.now();const SUBJ={quote:'New QUOTE request',contact:'New contact message',subscribe:'New newsletter sign-up',review:'New customer REVIEW (to approve)'};
  const payload=lastSent=Object.assign({_subject:(SUBJ[type]||'New website lead')+' - Red Apple Distribution',_template:'table',_captcha:'false',_honey:'',type,site:'redappledistribution.com',submitted_at:new Date().toISOString()},data,type==='quote'?acctInfo():{});
  const viaBackup=async()=>{if(!CFG.backupKey)return false;try{const b=Object.assign({},payload,{access_key:CFG.backupKey,subject:payload._subject,from_name:'Red Apple Distribution website'});delete b._subject;delete b._template;delete b._captcha;delete b._honey;const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(b)});const j=await r.json().catch(()=>null);return !!j&&j.success===true}catch(e){return false}};
  if(CFG.endpoint){try{const r=await fetch(CFG.endpoint,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(payload)});if(!r.ok)return await viaBackup();const j=await r.json().catch(()=>null);return (!!j&&(j.success===true||j.success==='true'))||await viaBackup()}catch(e){return await viaBackup()}}
@@ -205,7 +206,7 @@ function profFields(s,p,pre){p=p||{};const I=n=>pre+n+'-'+s;const same=p.whatsap
  +'<div class="rq-row2">'+fld({id:I('state'),n:'state',t:'select',l:'Your state',ac:'address-level1',req:1,opts:stateOpts(p.state)})+fld({id:I('pay'),n:'payment_pref',t:'select',l:'Preferred payment method',opt:1,opts:payOpts(p.payment_pref),hint:'Preference only. Never enter card or bank numbers.'})+'</div>'
  +fld({id:I('req'),n:'requirements',t:'textarea',l:'What are you looking for?',opt:1,ph:'Brands, categories, flavors or target quantities',v:p.requirements})}
 function formSignup(s){const I=n=>'su-'+n+'-'+s;
- return '<form class="rq-card aa-card" data-af="signup" novalidate onsubmit="return false"><h2 class="rq-h2">Your details</h2>'
+ return '<form class="rq-card aa-card" data-af="signup" novalidate><h2 class="rq-h2">Your details</h2>'
  +'<div class="rq-row2">'+fld({id:I('name'),n:'name',l:'Your name',ac:'name',req:1,ph:'Full name'})+fld({id:I('shop'),n:'shop',l:'Shop name',ac:'organization',req:1,ph:'Your shop name'})+'</div>'
  +'<div class="rq-row2">'+fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})+fld({id:I('pw'),n:'password',t:'password',l:'Password',ac:'new-password',req:1,hint:'At least 8 characters.'})+'</div>'
  +'<div class="rq-row2">'+fld({id:I('phone'),n:'phone',t:'tel',l:'Phone (US)',ac:'tel',inm:'tel',req:1,ph:'(555) 123-4567',max:20})+fld({id:I('wa'),n:'whatsapp',t:'tel',l:'WhatsApp number',opt:1,ac:'off',inm:'tel',ph:'(555) 123-4567',max:24})+'</div>'
@@ -219,19 +220,19 @@ function formSignup(s){const I=n=>'su-'+n+'-'+s;
  +'<p class="rq-note aa-consent">By creating an account you agree to how we use your details as described on our <a href="/shop/privacy/">Privacy page</a>. We never ask for card or bank numbers, and nothing is charged on this website.</p>'
  +'<p class="rq-note aa-alt">Already have an account? <a href="/shop/account/signin/">Sign in</a></p></form>'}
 function formSignin(s,next){const I=n=>'si-'+n+'-'+s;
- return '<form class="rq-card aa-card aa-narrow" data-af="signin"'+(next?' data-next="'+esc(next)+'"':'')+' novalidate onsubmit="return false"><h2 class="rq-h2">Welcome back</h2>'
+ return '<form class="rq-card aa-card aa-narrow" data-af="signin"'+(next?' data-next="'+esc(next)+'"':'')+' novalidate><h2 class="rq-h2">Welcome back</h2>'
  +fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})
  +fld({id:I('pw'),n:'password',t:'password',l:'Password',ac:'current-password',req:1})
  +HP+'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Sign in</button>'
  +'<p class="rq-note aa-alt"><button type="button" class="aa-link" data-aa="view" data-v="forgot">Forgot password?</button></p>'
  +'<p class="rq-note aa-alt">New here? <a href="/shop/account/signup'+(next&&nextPath(next)?'?next='+encodeURIComponent(next):'')+'">Create an account</a> or <a href="/shop/quote/">request a quote as a guest</a>.</p></form>'}
 function formForgot(s){const I=n=>'fg-'+n+'-'+s;
- return '<form class="rq-card aa-card aa-narrow" data-af="forgot" novalidate onsubmit="return false"><h2 class="rq-h2">Reset your password</h2><p class="rq-note" style="margin-bottom:16px">Enter the email you signed up with and we will send you a link to choose a new password.</p>'
+ return '<form class="rq-card aa-card aa-narrow" data-af="forgot" novalidate><h2 class="rq-h2">Reset your password</h2><p class="rq-note" style="margin-bottom:16px">Enter the email you signed up with and we will send you a link to choose a new password.</p>'
  +fld({id:I('email'),n:'email',t:'email',l:'Email',ac:'username',inm:'email',req:1,ph:'you@yourshop.com',max:160})
  +HP+'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Send reset link</button>'
  +'<p class="rq-note aa-alt"><button type="button" class="aa-link" data-aa="view" data-v="in">Back to sign in</button></p></form>'}
 function formReset(s){const I=n=>'rs-'+n+'-'+s;
- return '<form class="rq-card aa-card aa-narrow" data-af="reset" novalidate onsubmit="return false"><h2 class="rq-h2">Choose a new password</h2>'
+ return '<form class="rq-card aa-card aa-narrow" data-af="reset" novalidate><h2 class="rq-h2">Choose a new password</h2>'
  +fld({id:I('pw'),n:'password',t:'password',l:'New password',ac:'new-password',req:1,hint:'At least 8 characters.'})
  +fld({id:I('pw2'),n:'password2',t:'password',l:'Repeat new password',ac:'new-password',req:1})
  +'<p class="rq-err aa-ferr" data-err role="alert"></p><button type="submit" class="rq-btn full">Save new password</button></form>'}
@@ -351,6 +352,7 @@ async function doProfile(f){const v=rd(f);const bad=chk(f,['name','shop','phone'
 const FORMS={signup:doSignup,signin:doSignin,forgot:doForgot,reset:doReset,profile:doProfile};
 // confirming the email (or signing in) in another tab or app moves this tab on by itself, no refresh
 window.addEventListener('storage',e=>{if(e.key!==SK)return;SESS=e.newValue?ld(SK,null):null;PROF=null;acctNav();if(SESS&&['signin','signup'].includes(state.page))afterSignIn(null,false)});
+document.addEventListener('submit',e=>{const t=e.target;if(t&&t.tagName==='FORM'&&!t.getAttribute('action'))e.preventDefault()},true);
 document.addEventListener('submit',e=>{const f=e.target.closest&&e.target.closest('form[data-af]');if(!f)return;e.preventDefault();if(f.dataset.busy)return;const h=FORMS[f.dataset.af];if(h)h(f)});
 async function doSignOut(){await pushCart(false);const ok=!cDirty;await B.signOut();saveSess(null);PROF=null;try{localStorage.removeItem('ra_auth_name')}catch(e){}cReady=false;cDirty=false;D.q=null;D.err='';A.rows=null;A.q='';A.f='all';WELCOME=false;
  if(ok){cart={};sv('ra_cart',cart)}clearQuoteForms();pastLoading=false;acctNav();render();toast('You are signed out');go('/')}
@@ -393,7 +395,7 @@ function dashQuotes(){if(D.err==='q')return '<p class="rq-empty">We could not lo
   +'<ul class="aa-q-l">'+its.slice(0,5).map(it=>'<li>'+esc(it.display_name||it.product||'Item')+(it.flavor?' - '+esc(it.flavor):'')+' <em>'+esc((it.quantity||it.boxes||'')+' '+(it.unit||'Box'))+'</em></li>').join('')+(its.length>5?'<li class="aa-more">and '+(its.length-5)+' more</li>':'')+(its.length?'':'<li class="aa-more">Notes only</li>')+'</ul></div>'}).join('')}
 function dashHTML(s){const p=PROF;if(!p)return '<p class="rq-empty">Loading your account...</p>';
  const row=(k,v)=>'<div><dt>'+k+'</dt><dd>'+(v||'<span class="aa-none">Not provided</span>')+'</dd></div>';
- const prof=D.edit?'<form class="aa-edit" data-af="profile" novalidate onsubmit="return false">'+profFields(s,p,'pr-')+'<p class="rq-note" style="margin:-4px 0 14px">Email: '+esc(p.email||SESS.user.email)+' (contact us to change it)</p><p class="rq-err aa-ferr" data-err role="alert"></p><div class="aa-btns"><button type="submit" class="rq-btn">Save changes</button><button type="button" class="rq-btn ghost" data-aa="edit-off">Cancel</button></div></form>'
+ const prof=D.edit?'<form class="aa-edit" data-af="profile" novalidate>'+profFields(s,p,'pr-')+'<p class="rq-note" style="margin:-4px 0 14px">Email: '+esc(p.email||SESS.user.email)+' (contact us to change it)</p><p class="rq-err aa-ferr" data-err role="alert"></p><div class="aa-btns"><button type="submit" class="rq-btn">Save changes</button><button type="button" class="rq-btn ghost" data-aa="edit-off">Cancel</button></div></form>'
   :'<dl class="aa-dl">'+row('Name',esc(p.name))+row('Shop',esc(p.shop))+row('Email',esc(p.email||SESS.user.email))+row('Phone',p.phone?'<a href="tel:+1'+us10(p.phone)+'">'+esc(p.phone)+'</a>':'')+row('WhatsApp',p.whatsapp?'<a href="'+esc(waLink(p.whatsapp))+'" target="_blank" rel="noopener">'+esc(p.whatsapp)+'</a>':'')+row('Address',esc(p.address))+row('State',esc(p.state))+row('Payment preference',esc(p.payment_pref))+row('Looking for',esc(p.requirements))+'</dl><p style="margin-top:6px"><button type="button" class="rq-btn ghost aa-sm" data-aa="edit-on">Edit profile</button></p>';
  const note=p.status==='approved'?'Your account is approved. Request a quote any time and our team will connect with you.':'Our team is reviewing your account. You can browse and request quotes in the meantime, nothing is on hold.';
  return (WELCOME?'<div class="aa-welcome" role="status"><b>'+(WELCOME==='confirmed'?'Email confirmed. ':'')+'Welcome to Red Apple Distribution.</b> Your account is ready and we have your details.</div>':'')

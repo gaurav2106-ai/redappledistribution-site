@@ -29,3 +29,12 @@ create policy profiles_agent_select_approved on public.profiles for select to au
 drop policy if exists profiles_admin_update on public.profiles;
 drop policy if exists profiles_owner_update on public.profiles;
 create policy profiles_owner_update on public.profiles for update to authenticated using (public.is_admin() and public.is_owner()) with check (public.is_admin() and public.is_owner());
+
+-- Security hardening (run once; safe to repeat): retailers cannot edit saved quotes or insert pre-replied ones;
+-- the public (anon) role gets no direct table access and cannot call internal helper functions.
+drop policy if exists quotes_update_own on public.quotes;
+drop policy if exists quotes_insert_own on public.quotes;
+create policy quotes_insert_own on public.quotes for insert to authenticated with check (user_id = auth.uid() and replied_at is null);
+revoke all on public.admin_emails, public.carts, public.profiles, public.quotes from anon;
+revoke execute on function public.is_admin(), public.is_owner(), public.guard_profile_status(), public.guard_quote_fields(), public.handle_new_user() from anon, public;
+grant execute on function public.is_admin(), public.is_owner() to authenticated;

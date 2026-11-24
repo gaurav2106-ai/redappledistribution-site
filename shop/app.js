@@ -860,7 +860,10 @@ function initShell(){const age=$('#age');let ok=false;try{ok=localStorage.getIte
  const nav=$('#nav'),burger=$('#burger'),links=$('#links');let lastY=0;
  burger.addEventListener('click',()=>{const o=links.classList.toggle('is-open');nav.classList.toggle('is-open',o);burger.setAttribute('aria-expanded',o)});
  links.addEventListener('click',e=>{if(e.target.closest('a'))closeMenus()});
- document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus()});
+ const nvs=$$('[data-nv]');const closeNv=x=>nvs.forEach(n=>{if(n!==x)$('.nv__b',n).setAttribute('aria-expanded','false')});
+ nvs.forEach(n=>{const b=$('.nv__b',n);b.addEventListener('click',()=>{const o=b.getAttribute('aria-expanded')==='true';closeNv(n);b.setAttribute('aria-expanded',!o)})});
+ document.addEventListener('click',e=>{if(!e.target.closest('[data-nv]'))closeNv()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMenus();closeNv()}});
  addEventListener('scroll',()=>{const y=scrollY;nav.classList.toggle('is-solid',y>30);if(!links.classList.contains('is-open'))nav.classList.toggle('is-hidden',y>500&&y>lastY+4);if(y<lastY-4)nav.classList.remove('is-hidden');lastY=y},{passive:true});
  nav.classList.toggle('is-solid',scrollY>30);
  if(fine()){const h=$('.phead'),im=$$('.phead__art .a');if(h&&im.length){let raf=0,mx=0,my=0;h.addEventListener('pointermove',e=>{const r=h.getBoundingClientRect();mx=(e.clientX-r.left)/r.width-.5;my=(e.clientY-r.top)/r.height-.5;if(!raf)raf=requestAnimationFrame(()=>{raf=0;im.forEach(x=>{const d=+x.dataset.depth||10;x.style.translate=(mx*d*-1.6).toFixed(1)+'px '+(my*d*-1.2).toFixed(1)+'px'})})})}}}

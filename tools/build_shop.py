@@ -205,13 +205,26 @@ def art_mix(cats, skip=0):
     return pool
 
 
+def art_all_cats(skip=2):
+    """one photo product from every category, for the main catalog banner"""
+    pool = []
+    for c in ['Vapes', 'Edibles', 'Hydroxy', 'Pre-Rolls', 'Flower', 'Shrooms', 'Kratom', 'Smoke Accessories']:
+        items = [p for p in P if p['c'] == c and p.get('i') and p['id'] not in ART_USED_IDS]
+        fresh = [p for p in items if p['b'] not in ART_USED_BRANDS]
+        pick = (fresh or items)[skip:skip + 1] or (fresh or items)[:1]
+        if pick:
+            pool.append(pick[0])
+            ART_USED_IDS.add(pick[0]['id'])
+    return pool
+
+
 # page heads that must look different from each other are picked once, up front
 HEAD_ART = {}
 
 
 def head_art(key, cats, skip=0):
     if key not in HEAD_ART:
-        HEAD_ART[key] = art_mix(cats, skip)
+        HEAD_ART[key] = art_all_cats(skip) if key == 'all' else art_mix(cats, skip)
     return HEAD_ART[key]
 
 
@@ -357,7 +370,7 @@ def art_html(prods, big_mark=False):
         imgs = '<img class="a a1 is-mark" src="/assets/red-apple-mark.svg" alt="" data-depth="14">'
     else:
         imgs = ''
-    return '<div class="phead__art" aria-hidden="false">%s</div>' % imgs if imgs else ''
+    return '<div class="phead__art%s" aria-hidden="false">%s</div>' % (' phead__art--grid' if len(prods) > 4 else '', imgs) if imgs else ''
 
 
 def phead(crumb_html, eyebrow, h1_html, lead, art='', extra=''):

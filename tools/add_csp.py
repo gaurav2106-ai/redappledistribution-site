@@ -13,8 +13,8 @@ def policy(hashes):
     return '; '.join([
         "default-src 'self'",
         "script-src 'self' %s https://cdn.onesignal.com https://*.onesignal.com" % h,
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.onesignal.com",
-        "font-src 'self' https://fonts.gstatic.com data:",
+        "style-src 'self' 'unsafe-inline' https://*.onesignal.com",
+        "font-src 'self' data:",
         "img-src 'self' data: https:",
         "connect-src 'self' https://qdqioorsppkinjjyvata.supabase.co https://formspree.io https://*.onesignal.com",
         "frame-src https://*.onesignal.com",

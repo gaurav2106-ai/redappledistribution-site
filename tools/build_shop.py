@@ -229,8 +229,7 @@ def head_art(key, cats, skip=0):
 
 
 # ---------------------------------------------------------------- shared chrome
-FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-         '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">')
+FONTS = ('<link rel="preload" href="/assets/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/barlow-condensed-500.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/assets/fonts/instrument-serif-italic.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="/fonts.css?v=1">')
 
 ARR = '<svg class="arr" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
 
@@ -252,6 +251,7 @@ HEADER = '''<header class="nav" id="nav"><div class="wrap nav__in">
 <a href="/shop/account/signin/" class="nav__acct" data-ra-acct>Sign in</a><a href="/shop/account/signup/" class="nav__acct-btn btn btn--line btn--sm" data-ra-acct-cta>Create account</a>
 <a href="/shop/quote/" class="btn btn--red btn--sm nav__quote">Get a quote<span class="nav__n" data-nav-n hidden></span></a>
 </nav>
+<a href="/shop/account/" class="nav__acct-m" aria-label="Account"><svg class="bi" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
 <button class="nav__burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="links"><span></span><span></span></button>
 </div></header>'''
 
@@ -320,9 +320,30 @@ def write(path, html):
 
 
 # ---------------------------------------------------------------- components
+_DIMS = {}
+
+
+def dims(rel):
+    """real pixel size of a local image as width/height attributes (stops layout shift while it loads)"""
+    if rel not in _DIMS:
+        try:
+            from PIL import Image
+            with Image.open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), rel.lstrip('/'))) as im:
+                _DIMS[rel] = ' width="%d" height="%d"' % im.size
+        except Exception:
+            _DIMS[rel] = ''
+    return _DIMS[rel]
+
+
+def ttl(name):
+    """page title: full site name when it fits in about 60 characters, short name otherwise"""
+    full = '%s Wholesale | Red Apple Distribution' % name
+    return full if len(full) <= 60 else '%s Wholesale | Red Apple' % name
+
+
 def card(p):
     src = img_src(p)
-    im = ('<img src="%s" alt="%s" loading="lazy" decoding="async">' % (e(src), e(alt_of(p)))) if src else \
+    im = ('<img src="%s" alt=""%s loading="lazy" decoding="async">' % (e(src), dims(src))) if src else \
         '<img class="is-mark" src="/assets/red-apple-mark.svg" alt="" loading="lazy" decoding="async">'
     if fl_list(p):
         add = '<a class="pc__add" href="/shop/p/%d/#buy">Choose flavor</a>' % p['id']
@@ -385,7 +406,7 @@ def phead(crumb_html, eyebrow, h1_html, lead, art='', extra=''):
 
 
 def faq_item(q, a, i, pre='f'):
-    return ('<div class="faq__item%s" data-faq><h3><button class="faq__q" type="button" id="%s-q%d" aria-expanded="%s" aria-controls="%s-a%d"><span>%s</span><i class="faq__ic" aria-hidden="true"></i></button></h3>'
+    return ('<div class="faq__item%s" data-faq><h2 class="faq__h"><button class="faq__q" type="button" id="%s-q%d" aria-expanded="%s" aria-controls="%s-a%d"><span>%s</span><i class="faq__ic" aria-hidden="true"></i></button></h2>'
             '<div class="faq__a" id="%s-a%d" role="region" aria-labelledby="%s-q%d"><div><p>%s</p></div></div></div>'
             % (' is-open' if i == 0 and pre != 'f' else '', pre, i, 'true' if i == 0 and pre != 'f' else 'false', pre, i, e(q), pre, i, pre, i, e(a)))
 
@@ -493,7 +514,7 @@ def build_product(p):
     title = full
     if len(title) > 52:
         title = title[:51].rstrip() + '...'
-    return write(path, page(path, title + ' Wholesale | Red Apple Distribution', desc, main, flavors=True, ld=ld, image=(SITE + src) if src else None, typ='product'))
+    return write(path, page(path, ttl(title), desc, main, flavors=True, ld=ld, image=(SITE + src) if src else None, typ='product'))
 
 
 def build_brands():
@@ -519,7 +540,7 @@ def build_brand(b):
     ph = phead(crumbs(*cr), 'Brand', '<em>%s</em>' % e(b), brand_desc(b, lst), art)
     main = ('<main id="main" data-page="brand" data-brand="%s">%s<section class="sec sec--i" aria-label="Products"><div class="wrap"><ul class="pgrid" id="grid" data-static="%d">%s</ul>'
             '<p class="more"><button class="btn btn--ink" type="button" data-act="load-more" hidden>Load more products</button></p></div></section>%s</main>') % (e(b), ph, len(lst), cards(lst), ALERTS)
-    return write(path, page(path, '%s Wholesale | Red Apple Distribution' % clean(b), brand_desc(b, lst), main, ld=[crumb_ld(cr)], image=(SITE + img_src(art_picks(lst, 1, False)[0])) if art_picks(lst, 1, False) else None))
+    return write(path, page(path, ttl(clean(b)), brand_desc(b, lst), main, ld=[crumb_ld(cr)], image=(SITE + img_src(art_picks(lst, 1, False)[0])) if art_picks(lst, 1, False) else None))
 
 
 def steps_block():
@@ -536,7 +557,7 @@ def cta_block(h='Ready to stock your <em>shelves?</em>'):
 def build_about():
     path = '/shop/about/'
     cr = [('About', path)]
-    ph = phead(crumbs(*cr), 'About us', 'Wholesale, made <em>easy.</em>', 'Red Apple Distribution is a wholesale supplier for smoke shops, vape shops, convenience stores and other retailers across the United States.', art_html(head_art('about', ['Hydroxy', 'Edibles', 'Vapes'], 0)))
+    ph = phead(crumbs(*cr), 'About us', 'Wholesale, made <em>easy</em>', 'Red Apple Distribution is a wholesale supplier for smoke shops, vape shops, convenience stores and other retailers across the United States.', art_html(head_art('about', ['Hydroxy', 'Edibles', 'Vapes'], 0)))
     why = [('Quality', 'Genuine products only, sourced from trusted brands. What you order is what you stock.'),
            ('Variety', 'One supplier for many categories. Browse all brands or jump straight to new arrivals and trending products.'),
            ('Service', 'A real person follows up on every quote request by WhatsApp, phone or email, whichever you prefer.'),
@@ -563,7 +584,7 @@ def contact_card(label, val, href):
 def build_contact():
     path = '/shop/contact/'
     cr = [('Contact', path)]
-    ph = phead(crumbs(*cr), 'Contact', 'Talk to a <em>rep.</em>', 'Questions about a quote, a product or your account? Share your details and our team will get back to you. Looking for prices? Request a quote and we will connect with you.')
+    ph = phead(crumbs(*cr), 'Contact', 'Talk to a <em>rep</em>', 'Questions about a quote, a product or your account? Share your details and our team will get back to you. Looking for prices? Request a quote and we will connect with you.')
     form = ('<form class="rq-card form" data-form="contact" novalidate><h2 class="rq-h2">Send us a message</h2>'
             '<div class="rq-row2"><div class="rq-f"><label for="c-name">Your name <span aria-hidden="true">*</span></label><input class="rq-in" id="c-name" name="contact" autocomplete="name" required></div>'
             '<div class="rq-f"><label for="c-shop">Shop name</label><input class="rq-in" id="c-shop" name="shop" autocomplete="organization"></div></div>'
@@ -582,7 +603,7 @@ def build_contact():
 def build_faq():
     path = '/shop/faq/'
     cr = [('FAQ', path)]
-    ph = phead(crumbs(*cr), 'FAQ', 'Questions, <em>answered.</em>', 'Short answers about quotes, shipping and credit.')
+    ph = phead(crumbs(*cr), 'FAQ', 'Questions, <em>answered</em>', 'Short answers about quotes, shipping and credit.')
     chips = [('all', 'All'), ('ordering', 'Ordering'), ('shipping', 'Shipping'), ('returns', 'Returns and guarantee'), ('account', 'Account'), ('about', 'About us')]
     chip_html = ''.join('<button class="fchip" type="button" data-cat="%s" aria-pressed="%s">%s</button>' % (k, 'true' if k == 'all' else 'false', v) for k, v in chips)
     items = ''.join(faq_item(q, a, i, 'f').replace('data-faq>', 'data-faq data-cat="%s">' % c, 1) for i, (q, a, c) in enumerate(FAQS))

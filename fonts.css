@@ -1,0 +1,5 @@
+/* Self-hosted fonts (latin subset): no third-party request, and the files are preloaded so text does not jump when they arrive. */
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:500 600;font-display:swap;src:url(/assets/fonts/barlow-condensed-500.woff2) format('woff2')}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:400 600;font-display:swap;src:url(/assets/fonts/dm-sans.woff2) format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/instrument-serif.woff2) format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(/assets/fonts/instrument-serif-italic.woff2) format('woff2')}

@@ -10,6 +10,7 @@ const SUBJECTS: Record<string, string> = {
   contact: 'New contact message - Red Apple Distribution',
   subscribe: 'New newsletter sign-up - Red Apple Distribution',
   review: 'New customer REVIEW (to approve) - Red Apple Distribution',
+  account: 'New retailer account - Red Apple Distribution',
 };
 const PER_VISITOR = 5;   // sends per visitor per 10 minutes
 const OVERALL = 40;      // sends overall per hour (protects the inbox and the Resend plan)
@@ -78,7 +79,7 @@ Deno.serve(async (req) => {
   if (!SUBJECTS[type]) return json({ success: false, error: 'bad type' }, 400, allow);
 
   const email = String(body.email || '').trim();
-  if ((type === 'quote' || type === 'contact') && !EMAIL_RE.test(email)) return json({ success: false, error: 'email required' }, 400, allow);
+  if ((type === 'quote' || type === 'contact' || type === 'account') && !EMAIL_RE.test(email)) return json({ success: false, error: 'email required' }, 400, allow);
   if (type === 'subscribe' && !String(body.contact || '').trim()) return json({ success: false, error: 'contact required' }, 400, allow);
   if (type === 'quote' && (!String(body.business || '').trim() || !String(body.name || '').trim())) {
     return json({ success: false, error: 'business and name required' }, 400, allow);
@@ -87,7 +88,11 @@ Deno.serve(async (req) => {
   const key = (Deno.env.get('RESEND_API_KEY') || Deno.env.get('ESEND_API_KEY'));
   if (!key) return json({ success: false, error: 'not configured' }, 500, allow);
 
-  const subject = SUBJECTS[type];
+  let subject = SUBJECTS[type];
+  if (type === 'account') {
+    const shop = String(body.shop || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 80);
+    if (shop) subject = 'New retailer account: ' + shop;
+  }
   const skip = new Set(['_subject', '_template', '_captcha', '_honey', 'items']);
   const keys = Object.keys(body).filter((k) => !skip.has(k));
   const rows = keys

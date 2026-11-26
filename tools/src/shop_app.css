@@ -784,3 +784,17 @@ fieldset.rq-bad{outline:1px solid #FFC4B8;outline-offset:6px;border-radius:8px}
 .qd .nq-cx{max-width:none}
 @media(max-width:899px){.qd{width:100vw;border-left:0}.qd-hd{padding:18px 18px 14px}.qd-b{padding:18px}.qd-tabs{padding:0 18px}.qd-ft{padding-left:18px;padding-right:18px}.qd-dl{grid-template-columns:1fr 1fr;gap:16px}.qd h2{font-size:26px}.qd-fr{flex-wrap:wrap}.qd-fr>div:last-child{flex:1}.qd-btns{flex-wrap:nowrap}.qd-btns .rq-btn{flex:1}}
 @media(prefers-reduced-motion:reduce){.qd{animation-name:qd-fade}.qd-x:active{transform:none}}
+
+/* icon-only buttons with hover/focus label */
+.ib{width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:50%!important;flex:none}
+.ib .bi{width:18px;height:18px}
+.adm-tools .ib,.adm-qbar .adm-tools .ib{width:42px!important;height:42px!important;min-height:42px!important}
+[data-page=admin] .adm-q2 .qt-act .ib{width:36px!important;height:36px!important;min-height:36px!important;max-width:none}
+.qd .rq-btn.qd-quiet.ib{background:transparent;border-color:transparent;color:rgba(255,200,190,.95)}
+@media(hover:hover) and (pointer:fine){.qd .rq-btn.qd-quiet.ib:hover:not(:disabled){background:rgba(255,200,190,.14);color:#ffd9d1}}
+#ib-tip{position:fixed;left:0;top:0;z-index:9100;padding:6px 10px;border-radius:8px;background:#2a0307;border:1px solid rgba(255,240,220,.3);color:var(--ivory);font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(3px);transition:opacity .14s,transform .16s var(--out)}
+#ib-tip.below{transform:translateY(-3px)}#ib-tip.on{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){#ib-tip{transition:opacity .1s;transform:none}#ib-tip.below{transform:none}}
+
+/* quotes toolbar: fields and buttons share one baseline */
+[data-page=admin] .adm-qbar .rq-f{margin-bottom:0}

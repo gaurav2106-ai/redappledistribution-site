@@ -2,6 +2,7 @@
 // Emails website submissions to sales@redappledistro.com through Resend. Secret: RESEND_API_KEY. Verify JWT: OFF.
 // Protection: only redappledistribution.com origin, fixed recipient and subject, required fields, field caps,
 // database rate limit per visitor and overall (table public.lead_hits), spam-trap field.
+// Guest quote requests are also saved to public.guest_quotes (run docs/supabase_guest_quotes.sql once).
 const TO = 'sales@redappledistro.com';
 const FROM = 'Red Apple Website <quotes@mail.redappledistribution.com>';
 const ORIGINS = ['https://redappledistribution.com', 'https://www.redappledistribution.com'];
@@ -83,6 +84,20 @@ Deno.serve(async (req) => {
   if (type === 'subscribe' && !String(body.contact || '').trim()) return json({ success: false, error: 'contact required' }, 400, allow);
   if (type === 'quote' && (!String(body.business || '').trim() || !String(body.name || '').trim())) {
     return json({ success: false, error: 'business and name required' }, 400, allow);
+  }
+
+  // keep a copy of guest quote requests (visitors who are not signed in) so staff can see them in Admin > Quotes
+  if (type === 'quote' && !body.account) {
+    try {
+      const copy: Record<string, unknown> = {};
+      for (const k of Object.keys(body)) if (!k.startsWith('_')) copy[k] = body[k];
+      const boxes = Number(body.total_boxes);
+      await db('guest_quotes', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({ ref: String(body.ref || '').slice(0, 40), total_boxes: Number.isFinite(boxes) ? boxes : 0, payload: copy }),
+      });
+    } catch { /* never block the email */ }
   }
 
   const key = (Deno.env.get('RESEND_API_KEY') || Deno.env.get('ESEND_API_KEY'));

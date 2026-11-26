@@ -582,7 +582,8 @@ fieldset.rq-bad{outline:1px solid #FFC4B8;outline-offset:6px;border-radius:8px}
 .adm-det td{background:rgba(255,240,220,.05)}.nq-det{margin:0;padding-left:20px;display:grid;gap:8px}.nq-det li span{display:block;font-size:14px;color:var(--on-b-mute)}
 @media(max-width:899px){.nq-two,.nq-form{grid-template-columns:1fr}.nq-w2,.nq-w3{grid-column:auto}.adm-nq .nq-q,.adm-nq .nq-p{width:100%}.adm-nq td.nq-tot{padding-bottom:8px}}
 .adm-nq select[data-nq-line=unit]{min-width:104px}.adm-nq select[data-nq-line=variant],.adm-nq input[data-nq-line=variant]{min-width:170px}
-.adm-qt .adm-sub{white-space:nowrap;overflow-wrap:normal;word-break:normal}.adm-qt td{overflow-wrap:normal}.adm-qt .nq-badge{white-space:nowrap}.adm-qt td[data-l=Shop],.adm-qt td[data-l="Added by"]{white-space:nowrap}
+.adm-qt .adm-sub{white-space:nowrap;overflow-wrap:normal;word-break:normal}.adm-qt td{overflow-wrap:normal}.adm-qt .nq-badge{white-space:nowrap}
+.nq-guest{display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--ivory);box-shadow:inset 0 0 0 1px rgba(255,240,220,.55)}.nq-guest svg{flex:none}.adm-qt td[data-l=Shop],.adm-qt td[data-l="Added by"]{white-space:nowrap}
 .adm-qt .adm-act .rq-btn{min-height:34px;padding:0 14px;font-size:14px;white-space:nowrap}
 .adm-det td{white-space:normal!important}
 .adm-qt .aa-badge.sm{white-space:nowrap}
